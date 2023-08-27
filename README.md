@@ -24,7 +24,7 @@ To install the Node-RED Matter plugin, follow these steps:
 2. Navigate to the root directory of your Node-RED installation (typically `~/.node-red`).
 3. Run the following command to install the plugin:
    ```bash
-   npm install node-red-matter
+   npm install @node-red-matter/node-red-matter
    ```
 4. Restart Node-RED to ensure the plugin is loaded successfully.
 

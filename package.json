@@ -1,5 +1,5 @@
 {
-  "name": "node-red-matter",
+  "name": "@node-red-matter/node-red-matter",
   "version": "0.1.0",
   "main": "index.js",
   "license": "MIT",
@@ -13,6 +13,10 @@
       "matter-device-control": "lib/src/nodes/matter-device-control-node.js"
     }
   },
+  "keywords": [
+    "node-red",
+    "matter"
+  ],
   "dependencies": {
     "@project-chip/matter-node.js": "^0.5.0"
   },
