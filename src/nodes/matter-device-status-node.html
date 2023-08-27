@@ -1,0 +1,36 @@
+<script type="module">
+  const name = 'matter-device-status';
+  RED.nodes.registerType(name, {
+    category: 'Matter',
+    color: '#959dc6',
+    defaults: {
+      name: { value: '' },
+      device: { value: '', type: 'matter-device' },
+    },
+    outputs: 1,
+    icon: 'fa-bolt',
+    label: function () {
+      return this.name || name;
+    },
+  });
+</script>
+
+<script type="text/html" data-template-name="matter-device-status">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-device">
+      <i class="fa fa-bolt"></i> Matter Device
+    </label>
+    <input type="text" id="node-input-device" placeholder="Matter Device" />
+  </div>
+</script>
+
+<script type="text/html" data-help-name="matter-device-status">
+  <p>
+    Read the status of a Matter device. The status is returned in the
+    <code>msg.payload</code> as a JSON object.
+  </p>
+</script>

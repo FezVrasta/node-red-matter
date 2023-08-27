@@ -1,0 +1,62 @@
+<script type="module">
+  const name = 'matter-device';
+  RED.nodes.registerType(name, {
+    category: 'config',
+    color: '#a6bbcf',
+    defaults: {
+      name: { value: '' },
+      qrcode: { value: 'foobar' },
+    },
+    icon: 'file.png',
+    label: function () {
+      return this.name || name;
+    },
+    oneditprepare: function () {
+      $.getJSON(
+        `node-red-matter/pairingcode?device-id=${this.id}`,
+        function (data) {
+          console.log(data);
+          document.getElementById('node-config-input-pairing').innerText =
+            data.qrcode;
+
+          document.getElementById('node-config-input-manual-pairing').value =
+            data.manualPairingCode;
+        }
+      );
+    },
+  });
+</script>
+
+<script type="text/html" data-template-name="matter-device">
+  <div class="form-row">
+    <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-config-input-name" placeholder="Name" />
+  </div>
+
+  <h3>Pairing</h3>
+  <p>
+    Scan the QR code in your Matter controller app (Apple Home, Google Home,
+    Alexa, etc...) to pair this device. We suggest to give this device the same
+    name as this node to make it easier to find it later.
+  </p>
+  <div class="form-row">
+    <label for="node-config-input-pairing">
+      <i class="fa fa-qrcode"></i> QR Code
+    </label>
+    <pre style="line-height: 1" id="node-config-input-pairing"></pre>
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-manual-pairing">
+      <i class="fa fa-key"></i> Code
+    </label>
+    <input type="text" id="node-config-input-manual-pairing" readonly />
+  </div>
+</script>
+
+<script type="text/html" data-help-name="matter-device">
+  <p>
+    Generates a virtual Matter device that can be paired with a Matter
+    controller app (Apple Home, Google Home, Alexa, etc...). The device can be
+    read and/or controlled by other nodes in Node-RED.
+  </p>
+</script>
