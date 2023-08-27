@@ -7,16 +7,23 @@
     "build": "rm -rf lib && tsc && node scripts/copy_html_files.js"
   },
   "node-red": {
+    "version": ">=2.0.0",
     "nodes": {
       "matter-device": "lib/src/nodes/matter-device-node.js",
       "matter-device-status": "lib/src/nodes/matter-device-status-node.js",
       "matter-device-control": "lib/src/nodes/matter-device-control-node.js"
     }
   },
+  "engines": {
+    "node": ">=12.0.0"
+  },
   "keywords": [
     "node-red",
     "matter"
   ],
+  "bugs": {
+    "url": "https://github.com/FezVrasta/node-red-matter/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc"
+  },
   "dependencies": {
     "@project-chip/matter-node.js": "^0.5.0"
   },
