@@ -5,17 +5,24 @@
     color: '#a6bbcf',
     defaults: {
       name: { value: '' },
-      qrcode: { value: 'foobar' },
+      devicetype: {
+        value: 'OnOffLightDevice',
+        required: true,
+        validate: RED.validators.regex(
+          /^(OnOffLightDevice|OnOffPluginUnitDevice)$/
+        ),
+      },
     },
     icon: 'file.png',
     label: function () {
-      return this.name || name;
+      return this.name || 'Matter Device';
     },
     oneditprepare: function () {
       $.getJSON(
         `node-red-matter/pairingcode?device-id=${this.id}`,
         function (data) {
-          console.log(data);
+          document.getElementById('node-config-pairing').hidden = false;
+          document.getElementById('node-config-notready').hidden = true;
           document.getElementById('node-config-input-pairing').innerText =
             data.qrcode;
 
@@ -32,24 +39,38 @@
     <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
     <input type="text" id="node-config-input-name" placeholder="Name" />
   </div>
+  <div class="form-row">
+    <label for="node-config-input-devicetype"
+      ><i class="fa fa-tag"></i> Device Type</label
+    >
+    <select id="node-config-input-devicetype">
+      <option value="OnOffLightDevice">On/Off Light</option>
+      <option value="OnOffPluginUnitDevice">On/Off Plug</option>
+    </select>
+  </div>
 
   <h3>Pairing</h3>
-  <p>
-    Scan the QR code in your Matter controller app (Apple Home, Google Home,
-    Alexa, etc...) to pair this device. We suggest to give this device the same
-    name as this node to make it easier to find it later.
+  <p id="node-config-notready">
+    To generate a pairing code, deploy this node first.
   </p>
-  <div class="form-row">
-    <label for="node-config-input-pairing">
-      <i class="fa fa-qrcode"></i> QR Code
-    </label>
-    <pre style="line-height: 1" id="node-config-input-pairing"></pre>
-  </div>
-  <div class="form-row">
-    <label for="node-config-input-manual-pairing">
-      <i class="fa fa-key"></i> Code
-    </label>
-    <input type="text" id="node-config-input-manual-pairing" readonly />
+  <div id="node-config-pairing" hidden>
+    <p>
+      Scan the QR code in your Matter controller app (Apple Home, Google Home,
+      Alexa, etc...) to pair this device. We suggest to give this device the
+      same name as this node to make it easier to find it later.
+    </p>
+    <div class="form-row">
+      <label for="node-config-input-pairing">
+        <i class="fa fa-qrcode"></i> QR Code
+      </label>
+      <pre style="line-height: 1" id="node-config-input-pairing"></pre>
+    </div>
+    <div class="form-row">
+      <label for="node-config-input-manual-pairing">
+        <i class="fa fa-key"></i> Code
+      </label>
+      <input type="text" id="node-config-input-manual-pairing" readonly />
+    </div>
   </div>
 </script>
 

@@ -1,8 +1,10 @@
 import type { NodeAPI, Node, NodeDef } from 'node-red';
-import { MatterDevice } from '../modules/matter-device';
+import { DeviceType, MatterOnOffDevice } from '../modules/matter-on-off-device';
 import path from 'path';
 
-interface MatterDeviceNodeConfig extends NodeDef {}
+interface MatterDeviceNodeConfig extends NodeDef {
+  devicetype: DeviceType;
+}
 
 interface MatterDeviceNode extends Node {
   qrcode: string;
@@ -10,23 +12,24 @@ interface MatterDeviceNode extends Node {
 }
 
 export type StatusChangeMessage = {
-  type: 'OnOffLightDevice';
+  type: DeviceType;
   status: boolean | undefined;
 };
 
 export default function (RED: NodeAPI) {
-  console.log('setting up path');
   RED.httpAdmin.route('/node-red-matter/pairingcode').get(function (req, res) {
-    console.log('FEZ');
     const deviceId = req.query['device-id' as never] as string;
     const node = RED.nodes.getNode(deviceId) as MatterDeviceNode;
+
+    if (node == null) {
+      res.status(404).send('Device not found');
+      return;
+    }
 
     const message = {
       qrcode: node.qrcode,
       manualPairingCode: node.manualPairingCode,
     };
-
-    console.log(message);
 
     res.json(message);
   });
@@ -36,10 +39,9 @@ export default function (RED: NodeAPI) {
     config: MatterDeviceNodeConfig
   ) {
     const node = this;
-    node.qrcode = 'foobar!';
     RED.nodes.createNode(node, config);
 
-    const matterDevice = new MatterDevice();
+    const matterDevice = new MatterOnOffDevice(config.devicetype);
 
     const nodeRedFolderPath = path.resolve(
       path.dirname(process.env.NODE_RED_HOME ?? '~/.node-red/node_modules'),
@@ -51,7 +53,7 @@ export default function (RED: NodeAPI) {
         storageLocation: `${nodeRedFolderPath}/.matter-devices/${this.id}`,
         onStatusChange: (status) => {
           const message: StatusChangeMessage = {
-            type: 'OnOffLightDevice',
+            type: config.devicetype,
             status,
           };
           node.emit('status_change', message);
@@ -62,21 +64,41 @@ export default function (RED: NodeAPI) {
           node.qrcode = message.qrCode;
           node.manualPairingCode = message.manualPairingCode;
 
-          matterDevice.onOffDevice?.isOn().then((status) => {
-            const updateStatusMessage: StatusChangeMessage = {
-              type: 'OnOffLightDevice',
-              status,
-            };
-            node.emit('status_change', updateStatusMessage);
-          });
+          if (matterDevice.device == null) {
+            return;
+          }
+
+          switch (config.devicetype) {
+            case DeviceType.OnOffLightDevice:
+            case DeviceType.OnOffPluginUnitDevice:
+              matterDevice.device.isOn().then((status) => {
+                const updateStatusMessage: StatusChangeMessage = {
+                  type: config.devicetype,
+                  status,
+                };
+                node.emit('status_change', updateStatusMessage);
+              });
+              break;
+            default:
+              node.warn(`Unknown device type ${config.devicetype}`);
+          }
         }
-        /* done */
       })
       .catch((err) => console.error(err));
 
     node.addListener('change_status', (status) => {
-      console.log('change status', status);
-      matterDevice.onOffDevice?.onOff(status);
+      if (matterDevice.device == null) {
+        return;
+      }
+
+      switch (config.devicetype) {
+        case DeviceType.OnOffLightDevice:
+        case DeviceType.OnOffPluginUnitDevice:
+          matterDevice.device.onOff(status);
+          break;
+        default:
+          node.warn(`Unknown device type ${config.devicetype}`);
+      }
     });
   }
 

@@ -31,17 +31,16 @@ import {
 import { Time } from '@project-chip/matter-node.js/time';
 import {
   commandExecutor,
-  getIntParameter,
-  getParameter,
   logEndpoint,
-  requireMinNodeVersion,
 } from '@project-chip/matter-node.js/util';
 import { DeviceTypeId, VendorId } from '@project-chip/matter.js/datatype';
 
-Logger.defaultLogLevel = Level.INFO;
+Logger.defaultLogLevel = Level.FATAL;
 
-requireMinNodeVersion(16);
-
+export enum DeviceType {
+  OnOffPluginUnitDevice = 'OnOffPluginUnitDevice',
+  OnOffLightDevice = 'OnOffLightDevice',
+}
 interface CommissionMessage {
   qrCode: string;
   qrPairingCode: string;
@@ -49,10 +48,15 @@ interface CommissionMessage {
   qrCodeUrl: string;
 }
 
-export class MatterDevice {
+export class MatterOnOffDevice {
   private matterServer: MatterServer | undefined;
   uniqueId: number | undefined;
-  onOffDevice: OnOffLightDevice | OnOffPluginUnitDevice | undefined;
+  device: OnOffPluginUnitDevice | OnOffLightDevice | undefined;
+  type: DeviceType;
+
+  constructor(type: DeviceType) {
+    this.type = type;
+  }
 
   async start({
     storageLocation,
@@ -86,33 +90,22 @@ export class MatterDevice {
 
     const deviceStorage = storageManager.createContext('Device');
 
-    if (deviceStorage.has('isSocket')) {
+    if (deviceStorage.has('type')) {
       console.info('Device type found in storage. -type parameter is ignored.');
     }
-    const isSocket = deviceStorage.get(
-      'isSocket',
-      getParameter('type') === 'socket'
-    );
+    const isSocket = deviceStorage.get('type', this.type);
     const deviceName = 'Matter test device';
     const vendorName = 'matter-node.js';
-    const passcode =
-      getIntParameter('passcode') ?? deviceStorage.get('passcode', 20202021);
-    const discriminator =
-      getIntParameter('discriminator') ??
-      deviceStorage.get('discriminator', 3840);
+    const passcode = deviceStorage.get('passcode', 20202021);
+    const discriminator = deviceStorage.get('discriminator', 3840);
     // product name / id and vendor id should match what is in the device certificate
-    const vendorId =
-      getIntParameter('vendorid') ?? deviceStorage.get('vendorid', 0xfff1);
+    const vendorId = deviceStorage.get('vendorid', 0xfff1);
     const productName = `node-matter OnOff ${isSocket ? 'Socket' : 'Light'}`;
-    const productId =
-      getIntParameter('productid') ?? deviceStorage.get('productid', 0x8000);
+    const productId = deviceStorage.get('productid', 0x8000);
 
-    const netAnnounceInterface = getParameter('announceinterface');
-    const port = getIntParameter('port') ?? 5540;
+    const port = 5540;
 
-    const uniqueId =
-      getIntParameter('uniqueid') ??
-      deviceStorage.get('uniqueid', Time.nowMs());
+    const uniqueId = deviceStorage.get('uniqueid', Time.nowMs());
     this.uniqueId = uniqueId;
 
     deviceStorage.set('passcode', passcode);
@@ -134,26 +127,36 @@ export class MatterDevice {
      * like identify that can be implemented with the logic when these commands are called.
      */
 
-    const onOffDevice = isSocket
-      ? new OnOffPluginUnitDevice()
-      : new OnOffLightDevice();
-    this.onOffDevice = onOffDevice;
-    onOffDevice.addOnOffListener((on) =>
+    switch (this.type) {
+      case DeviceType.OnOffPluginUnitDevice:
+        this.device = new OnOffPluginUnitDevice();
+        break;
+      case DeviceType.OnOffLightDevice:
+        this.device = new OnOffLightDevice();
+        break;
+      default:
+        throw new Error('Unknown device type');
+    }
+
+    this.device.addOnOffListener((on) =>
       commandExecutor(on ? 'on' : 'off')?.()
     );
 
-    onOffDevice.addCommandHandler(
+    this.device.addCommandHandler(
       'identify',
       async ({ request: { identifyTime } }) =>
         console.info(`Identify called for OnOffDevice: ${identifyTime}`)
     );
 
-    onOffDevice.addOnOffListener(() => {
-      onOffDevice.isOn().then((on) => {
+    this.device.addOnOffListener(() => {
+      if (this.device == null) return;
+
+      this.device.isOn().then((on) => {
         onStatusChange(on);
       });
     });
-    onOffDevice.isOn().then((on) => {
+
+    this.device.isOn().then((on) => {
       onStatusChange(on);
     });
 
@@ -170,12 +173,12 @@ export class MatterDevice {
      * are called.
      */
 
-    this.matterServer = new MatterServer(storageManager, netAnnounceInterface);
+    this.matterServer = new MatterServer(storageManager);
 
     const commissioningServer = new CommissioningServer({
       port,
       deviceName,
-      deviceType: DeviceTypeId(onOffDevice.deviceType),
+      deviceType: DeviceTypeId(this.device.deviceType),
       passcode,
       discriminator,
       basicInformation: {
@@ -190,7 +193,7 @@ export class MatterDevice {
       delayedAnnouncement: false,
     });
 
-    commissioningServer.addDevice(onOffDevice);
+    commissioningServer.addDevice(this.device);
 
     this.matterServer.addCommissioningServer(commissioningServer);
 

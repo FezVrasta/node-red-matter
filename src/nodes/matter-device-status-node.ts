@@ -1,5 +1,6 @@
 import type { NodeAPI, Node, NodeDef } from 'node-red';
 import { StatusChangeMessage } from './matter-device-node';
+import { DeviceType } from '../modules/matter-on-off-device';
 
 interface MatterDeviceNodeConfig extends NodeDef {
   device: string;
@@ -26,7 +27,10 @@ export default function (RED: NodeAPI) {
           payload: status,
         });
 
-        if (status.type === 'OnOffLightDevice') {
+        if (
+          status.type === DeviceType.OnOffLightDevice ||
+          status.type === DeviceType.OnOffPluginUnitDevice
+        ) {
           node.status({
             fill: status.status
               ? 'green'
