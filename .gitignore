@@ -2,3 +2,4 @@ lib/
 .device-node/
 .controller-node/
 node_modules/
+.DS_Store

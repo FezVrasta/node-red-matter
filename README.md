@@ -14,6 +14,8 @@ Apple Home, Google Home, and Alexa. Additionally, you can control and retrieve d
 - Flexibility: Customize and configure the behavior of Matter devices based on your specific requirements.
 - Seamless Integration: Connect Matter devices to existing Node-RED flows effortlessly.
 
+[![demo](public/demo.png)](public/demo.mp4)
+
 ## Installation
 
 To install the Node-RED Matter plugin, follow these steps:
