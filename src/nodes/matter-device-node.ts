@@ -4,6 +4,8 @@ import path from 'path';
 
 interface MatterDeviceNodeConfig extends NodeDef {
   devicetype: DeviceType;
+  port: number;
+  discriminator: number;
 }
 
 interface MatterDeviceNode extends Node {
@@ -41,7 +43,12 @@ export default function (RED: NodeAPI) {
     const node = this;
     RED.nodes.createNode(node, config);
 
-    const matterDevice = new MatterOnOffDevice(config.devicetype);
+    const matterDevice = new MatterOnOffDevice(
+      config.devicetype,
+      Number(config.port),
+      node.id,
+      Number(config.discriminator)
+    );
 
     const nodeRedFolderPath = path.resolve(
       path.dirname(process.env.NODE_RED_HOME ?? '~/.node-red/node_modules'),

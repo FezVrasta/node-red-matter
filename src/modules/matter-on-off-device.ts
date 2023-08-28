@@ -28,9 +28,13 @@ import {
   StorageBackendDisk,
   StorageManager,
 } from '@project-chip/matter-node.js/storage';
-import { Time } from '@project-chip/matter-node.js/time';
-import { logEndpoint } from '@project-chip/matter-node.js/util';
+import {
+  commandExecutor,
+  logEndpoint,
+} from '@project-chip/matter-node.js/util';
 import { DeviceTypeId, VendorId } from '@project-chip/matter.js/datatype';
+// @ts-ignore
+import pickPort from 'pick-port';
 
 Logger.defaultLogLevel = Level.FATAL;
 
@@ -45,16 +49,34 @@ interface CommissionMessage {
   qrCodeUrl: string;
 }
 
-let portInt = 0;
-
 export class MatterOnOffDevice {
   private matterServer: MatterServer | undefined;
-  uniqueId: number | undefined;
+  uniqueId: string;
   device: OnOffPluginUnitDevice | OnOffLightDevice | undefined;
-  type: DeviceType;
 
-  constructor(type: DeviceType) {
-    this.type = type;
+  port: number;
+  deviceType: DeviceType;
+  deviceName = 'Matter test device';
+  vendorName = 'Node RED Matter';
+  passcode = 20202021;
+  discriminator: number;
+  // product name / id and vendor id should match what is in the device certificate
+  vendorId = 0xfff1;
+  productName: string;
+  productId = 0x8000;
+
+  constructor(
+    deviceType: DeviceType,
+    port: number,
+    uniqueId: string,
+    discriminator: number
+  ) {
+    this.port = Number(port);
+    this.deviceType = deviceType;
+    this.uniqueId = uniqueId;
+    this.discriminator = discriminator;
+
+    this.productName = `node-matter ${this.deviceType}`;
   }
 
   async start({
@@ -64,6 +86,10 @@ export class MatterOnOffDevice {
     storageLocation: string;
     onStatusChange: (isOn: boolean | undefined) => void;
   }): Promise<CommissionMessage | undefined> {
+    const port: number =
+      this.port === 0
+        ? await pickPort({ type: 'udp', minPort: 5400, maxPort: 5540 })
+        : this.port;
     const storage = new StorageBackendDisk(storageLocation);
 
     /**
@@ -77,50 +103,6 @@ export class MatterOnOffDevice {
     await storageManager.initialize();
 
     /**
-     * Collect all needed data
-     *
-     * This block makes sure to collect all needed data from cli or storage. Replace this with where ever your data
-     * come from.
-     *
-     * Note: This example also uses the initialized storage system to store the device parameter data for convenience
-     * and easy reuse. When you also do that be careful to not overlap with Matter-Server own contexts
-     * (so maybe better not ;-)).
-     */
-
-    const deviceStorage = storageManager.createContext('Device');
-
-    function generateRandomNumber() {
-      return Math.floor(Math.random() * 4095);
-    }
-
-    const deviceType = deviceStorage.get('type', this.type);
-    const deviceName = 'Matter test device';
-    const vendorName = 'Node RED Matter';
-    const passcode = deviceStorage.get('passcode', 20202021);
-    const discriminator = deviceStorage.get(
-      'discriminator',
-      generateRandomNumber()
-    );
-    // product name / id and vendor id should match what is in the device certificate
-    const vendorId = deviceStorage.get('vendorid', 0xfff1);
-    const productName = `node-matter ${deviceType}`;
-    const productId = deviceStorage.get('productid', 0x8000);
-
-    portInt++;
-    const port = 5540 + portInt;
-
-    const uniqueId = deviceStorage.get('uniqueid', Time.nowMs());
-    this.uniqueId = uniqueId;
-
-    console.log('Starting Matter device', storageLocation, this.uniqueId, port);
-
-    deviceStorage.set('passcode', passcode);
-    deviceStorage.set('discriminator', discriminator);
-    deviceStorage.set('vendorid', vendorId);
-    deviceStorage.set('productid', productId);
-    deviceStorage.set('uniqueid', uniqueId);
-
-    /**
      * Create Device instance and add needed Listener
      *
      * Create an instance of the matter device class you want to use.
@@ -132,7 +114,7 @@ export class MatterOnOffDevice {
      * like identify that can be implemented with the logic when these commands are called.
      */
 
-    switch (deviceType) {
+    switch (this.deviceType) {
       case DeviceType.OnOffPluginUnitDevice:
         this.device = new OnOffPluginUnitDevice();
         break;
@@ -144,6 +126,7 @@ export class MatterOnOffDevice {
     }
 
     this.device.addOnOffListener((on) => {
+      commandExecutor(on ? 'on' : 'off')?.();
       onStatusChange(on);
     });
 
@@ -168,18 +151,18 @@ export class MatterOnOffDevice {
 
     const commissioningServer = new CommissioningServer({
       port,
-      deviceName,
+      deviceName: this.deviceName,
       deviceType: DeviceTypeId(this.device.deviceType),
-      passcode,
-      discriminator,
+      passcode: this.passcode,
+      discriminator: this.discriminator,
       basicInformation: {
-        vendorName,
-        vendorId: VendorId(vendorId),
-        nodeLabel: productName,
-        productName,
-        productLabel: productName,
-        productId,
-        serialNumber: `node-matter-${uniqueId}`,
+        vendorName: this.vendorName,
+        vendorId: VendorId(this.vendorId),
+        nodeLabel: this.productName,
+        productName: this.productName,
+        productLabel: this.productName,
+        productId: this.productId,
+        serialNumber: `node-red-matter-${this.uniqueId}`,
       },
       delayedAnnouncement: false,
     });

@@ -12,12 +12,34 @@
           /^(OnOffLightDevice|OnOffPluginUnitDevice)$/
         ),
       },
+      port: {
+        value: '0',
+        required: true,
+        validate: RED.validators.number(),
+        type: 'number',
+      },
+      discriminator: {
+        type: 'number',
+        validate: (value) => {
+          if (value < 0 || value > 4095) {
+            return false;
+          }
+          return true;
+        },
+      },
     },
     icon: 'file.png',
     label: function () {
       return this.name || 'Matter Device';
     },
     oneditprepare: function () {
+      const discriminatorInput = document.getElementById(
+        'node-config-input-discriminator'
+      );
+      if (discriminatorInput.value === '') {
+        discriminatorInput.value = Math.floor(Math.random() * 4096);
+      }
+
       $.getJSON(
         `node-red-matter/pairingcode?device-id=${this.id}`,
         function (data) {
@@ -36,17 +58,32 @@
 
 <script type="text/html" data-template-name="matter-device">
   <div class="form-row">
-    <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+    <label for="node-config-input-name">Name</label>
     <input type="text" id="node-config-input-name" placeholder="Name" />
   </div>
+
   <div class="form-row">
-    <label for="node-config-input-devicetype"
-      ><i class="fa fa-tag"></i> Device Type</label
-    >
+    <label for="node-config-input-devicetype">Device Type</label>
     <select id="node-config-input-devicetype">
       <option value="OnOffLightDevice">On/Off Light</option>
       <option value="OnOffPluginUnitDevice">On/Off Plug</option>
     </select>
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-port">UDP Port</label>
+    <input
+      type="number"
+      id="node-config-input-port"
+      placeholder="UDP Port Number"
+    />
+  </div>
+
+  <p>Leave this 0 to let the node pick a random free port number.</p>
+
+  <div class="form-row">
+    <label for="node-config-input-discriminator">Discriminator</label>
+    <input type="text" id="node-config-input-discriminator" />
   </div>
 
   <h3>Pairing</h3>
