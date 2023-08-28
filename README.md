@@ -22,13 +22,9 @@ The project is heavily based on [matter.js](https://github.com/project-chip/matt
 
 To install the Node-RED Matter plugin, follow these steps:
 
-1. Open your Node-RED installation.
-2. Navigate to the root directory of your Node-RED installation (typically `~/.node-red`).
-3. Run the following command to install the plugin:
-   ```bash
-   npm install @node-red-matter/node-red-matter
-   ```
-4. Restart Node-RED to ensure the plugin is loaded successfully.
+1. Open your Node-RED dashboard.
+2. Go to the palette manager and search for `@node-red-matter/node-red-matter`
+3. Install the plugin and load the provided example flow!
 
 ## ℹ️ Usage
 
