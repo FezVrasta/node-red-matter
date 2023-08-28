@@ -6,6 +6,8 @@ The Node-RED Matter plugin is an open-source project that enables the generation
 Matter devices created using this plugin can be seamlessly integrated into popular smart home controllers such as
 Apple Home, Google Home, and Alexa. Additionally, you can control and retrieve data from these devices directly within Node-RED.
 
+The project is heavily based on [matter.js](https://github.com/project-chip/matter.js), the official JavaScript Matter SDK.
+
 ## Features
 
 - Matter Device Generation: Generate Matter devices within Node-RED for easy integration with various smart home controllers.
