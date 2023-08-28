@@ -1,4 +1,3 @@
-![logo](public/logo.svg)
 
 # Node-RED Matter Plugin
 
