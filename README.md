@@ -8,7 +8,7 @@ Apple Home, Google Home, and Alexa. Additionally, you can control and retrieve d
 
 The project is heavily based on [matter.js](https://github.com/project-chip/matter.js), the official JavaScript Matter SDK.
 
-## Features
+## ✨ Features
 
 - Matter Device Generation: Generate Matter devices within Node-RED for easy integration with various smart home controllers.
 - Controller Compatibility: Compatible with popular smart home controllers such as Apple Home, Google Home, and Alexa.
@@ -18,7 +18,7 @@ The project is heavily based on [matter.js](https://github.com/project-chip/matt
 
 [![demo](public/demo.png)](public/demo.mp4)
 
-## Installation
+## 🛠️ Installation
 
 To install the Node-RED Matter plugin, follow these steps:
 
@@ -30,7 +30,7 @@ To install the Node-RED Matter plugin, follow these steps:
    ```
 4. Restart Node-RED to ensure the plugin is loaded successfully.
 
-## Usage
+## ℹ️ Usage
 
 To use the Node-RED Matter plugin, please follow these instructions:
 
@@ -40,7 +40,7 @@ To use the Node-RED Matter plugin, please follow these instructions:
 4. Establish the required connections between the Matter device node and other nodes in your flow.
 5. Deploy your Node-RED flow to make the Matter device available for control and data retrieval.
 
-## Limitations
+## ⛔ Limitations
 
 Currently, the Node-RED Matter plugin has the following limitations:
 
@@ -48,7 +48,7 @@ Currently, the Node-RED Matter plugin has the following limitations:
   more device types will be added in the future.
 - Integration with "real" Matter devices is not supported yet, but will be added in the future.
 
-## Backup
+## 💾 Backup
 
 The generated Matter device configurations are currently stored in `~/.node-red/node-red-matter/matter-devices`, or under wherever your Node-RED
 user directory is located.
@@ -56,7 +56,7 @@ user directory is located.
 Each device is stored in a sub-folder named after the configuration node ID, if you ever need to recreate a Matter configuration node but don't want to
 lose your existing virtual Matter device, you can simply rename the folder with the new configuration node ID and it will automatically pick it up.
 
-## Contributing
+## 🤲 Contributing
 
 We welcome contributions from the community to enhance and improve the Node-RED Matter plugin. To contribute, please follow these guidelines:
 
@@ -67,11 +67,11 @@ We welcome contributions from the community to enhance and improve the Node-RED 
 
 Please refer to the project's GitHub repository for any additional guidelines and instructions.
 
-## Support
+## 💙Support
 
 If you have any questions, feature requests, or need assistance with the Node-RED Matter plugin, please reach out via the project's GitHub issue tracker.
 
-## License
+## 📝 License
 
 Node-RED Matter is released under the MIT License.
 Please review the license file in the project's GitHub repository for more details.
