@@ -45,6 +45,8 @@ interface CommissionMessage {
   qrCodeUrl: string;
 }
 
+let portInt = 0;
+
 export class MatterOnOffDevice {
   private matterServer: MatterServer | undefined;
   uniqueId: number | undefined;
@@ -104,12 +106,13 @@ export class MatterOnOffDevice {
     const productName = `node-matter ${deviceType}`;
     const productId = deviceStorage.get('productid', 0x8000);
 
-    const port = 5540;
+    portInt++;
+    const port = 5540 + portInt;
 
     const uniqueId = deviceStorage.get('uniqueid', Time.nowMs());
     this.uniqueId = uniqueId;
 
-    console.log('Starting Matter device', storageLocation, this.uniqueId);
+    console.log('Starting Matter device', storageLocation, this.uniqueId, port);
 
     deviceStorage.set('passcode', passcode);
     deviceStorage.set('discriminator', discriminator);
