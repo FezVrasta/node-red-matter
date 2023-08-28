@@ -29,10 +29,7 @@ import {
   StorageManager,
 } from '@project-chip/matter-node.js/storage';
 import { Time } from '@project-chip/matter-node.js/time';
-import {
-  commandExecutor,
-  logEndpoint,
-} from '@project-chip/matter-node.js/util';
+import { logEndpoint } from '@project-chip/matter-node.js/util';
 import { DeviceTypeId, VendorId } from '@project-chip/matter.js/datatype';
 
 Logger.defaultLogLevel = Level.FATAL;
@@ -90,20 +87,29 @@ export class MatterOnOffDevice {
 
     const deviceStorage = storageManager.createContext('Device');
 
+    function generateRandomNumber() {
+      return Math.floor(Math.random() * 4095);
+    }
+
     const deviceType = deviceStorage.get('type', this.type);
     const deviceName = 'Matter test device';
     const vendorName = 'Node RED Matter';
     const passcode = deviceStorage.get('passcode', 20202021);
-    const discriminator = deviceStorage.get('discriminator', 3840);
+    const discriminator = deviceStorage.get(
+      'discriminator',
+      generateRandomNumber()
+    );
     // product name / id and vendor id should match what is in the device certificate
     const vendorId = deviceStorage.get('vendorid', 0xfff1);
-    const productName = `node-matter OnOff ${deviceType}`;
+    const productName = `node-matter ${deviceType}`;
     const productId = deviceStorage.get('productid', 0x8000);
 
     const port = 5540;
 
     const uniqueId = deviceStorage.get('uniqueid', Time.nowMs());
     this.uniqueId = uniqueId;
+
+    console.log('Starting Matter device', storageLocation, this.uniqueId);
 
     deviceStorage.set('passcode', passcode);
     deviceStorage.set('discriminator', discriminator);
@@ -135,7 +141,6 @@ export class MatterOnOffDevice {
     }
 
     this.device.addOnOffListener((on) => {
-      commandExecutor(on ? 'on' : 'off')?.();
       onStatusChange(on);
     });
 
