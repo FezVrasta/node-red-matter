@@ -43,6 +43,9 @@
       $.getJSON(
         `node-red-matter/pairingcode?device-id=${this.id}`,
         function (data) {
+          document.getElementById(
+            'node-config-input-devicetype'
+          ).disabled = true;
           document.getElementById('node-config-pairing').hidden = false;
           document.getElementById('node-config-notready').hidden = true;
           document.getElementById('node-config-input-pairing').innerText =

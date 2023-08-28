@@ -76,7 +76,7 @@ export class MatterOnOffDevice {
     this.uniqueId = uniqueId;
     this.discriminator = discriminator;
 
-    this.productName = `node-matter ${this.deviceType}`;
+    this.productName = this.deviceType.substring(0, 32);
   }
 
   async start({

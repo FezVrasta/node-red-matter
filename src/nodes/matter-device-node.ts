@@ -1,6 +1,5 @@
 import type { NodeAPI, Node, NodeDef } from 'node-red';
 import { DeviceType, MatterOnOffDevice } from '../modules/matter-on-off-device';
-import path from 'path';
 
 interface MatterDeviceNodeConfig extends NodeDef {
   devicetype: DeviceType;
@@ -50,14 +49,11 @@ export default function (RED: NodeAPI) {
       Number(config.discriminator)
     );
 
-    const nodeRedFolderPath = path.resolve(
-      path.dirname(process.env.NODE_RED_HOME ?? '~/.node-red/node_modules'),
-      '..'
-    );
+    const nodeRedFolderPath = RED.settings.userDir;
 
     matterDevice
       .start({
-        storageLocation: `${nodeRedFolderPath}/.matter-devices/${this.id}`,
+        storageLocation: `${nodeRedFolderPath}/node-red-matter/matter-devices/${this.id}`,
         onStatusChange: (status) => {
           const message: StatusChangeMessage = {
             type: config.devicetype,
@@ -93,6 +89,10 @@ export default function (RED: NodeAPI) {
       })
       .catch((err) => console.error(err));
 
+    node.on('close', (done: () => void) => {
+      matterDevice.stop().then(() => done());
+    });
+
     node.addListener('change_status', (status) => {
       if (matterDevice.device == null) {
         return;
@@ -101,6 +101,12 @@ export default function (RED: NodeAPI) {
       switch (config.devicetype) {
         case DeviceType.OnOffLightDevice:
         case DeviceType.OnOffPluginUnitDevice:
+          if (typeof status !== 'boolean') {
+            node.warn(
+              `Invalid status ${status} for device type ${config.devicetype}`
+            );
+            return;
+          }
           matterDevice.device.onOff(status);
           break;
         default:

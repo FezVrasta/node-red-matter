@@ -42,12 +42,14 @@ To use the Node-RED Matter plugin, please follow these instructions:
 
 Currently, the Node-RED Matter plugin has the following limitations:
 
-- The plugin only supports the OnOffLightDevice, more device types will be added in the future.
+- The plugin only supports the OnOffLightDevice (light) and OnOffPluginUnitDevice (outlet) device types,
+  more device types will be added in the future.
 - Integration with "real" Matter devices is not supported yet, but will be added in the future.
 
 ## Backup
 
-The generated Matter device configurations are currently stored in the `.matter-devices` folder located one level higher than `NODE_RED_HOME`.
+The generated Matter device configurations are currently stored in `~/.node-red/node-red-matter/matter-devices`, or under wherever your Node-RED
+user directory is located.
 
 Each device is stored in a sub-folder named after the configuration node ID, if you ever need to recreate a Matter configuration node but don't want to
 lose your existing virtual Matter device, you can simply rename the folder with the new configuration node ID and it will automatically pick it up.

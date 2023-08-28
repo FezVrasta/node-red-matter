@@ -20,6 +20,12 @@ export default function (RED: NodeAPI) {
 
     const matterDeviceNode = RED.nodes.getNode(config.device);
 
+    node.status({
+      fill: 'grey',
+      shape: 'dot',
+      text: 'unknown',
+    });
+
     matterDeviceNode.addListener(
       'status_change',
       (status: StatusChangeMessage) => {
