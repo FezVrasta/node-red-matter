@@ -67,7 +67,7 @@ We welcome contributions from the community to enhance and improve the Node-RED 
 
 Please refer to the project's GitHub repository for any additional guidelines and instructions.
 
-## 💙Support
+## 💙 Support
 
 If you have any questions, feature requests, or need assistance with the Node-RED Matter plugin, please reach out via the project's GitHub issue tracker.
 
