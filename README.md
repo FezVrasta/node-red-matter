@@ -10,11 +10,11 @@ The project is heavily based on [matter.js](https://github.com/project-chip/matt
 
 ## ✨ Features
 
-- Matter Device Generation: Generate Matter devices within Node-RED for easy integration with various smart home controllers.
-- Controller Compatibility: Compatible with popular smart home controllers such as Apple Home, Google Home, and Alexa.
-- Bi-Directional Communication: Control and read data from Matter devices directly within Node-RED.
-- Flexibility: Customize and configure the behavior of Matter devices based on your specific requirements.
-- Seamless Integration: Connect Matter devices to existing Node-RED flows effortlessly.
+- **Matter Device Generation**: Generate Matter devices within Node-RED for easy integration with various smart home controllers.
+- **Controller Compatibility**: Compatible with popular smart home controllers such as Apple Home, Google Home, and Alexa.
+- **Bi-Directional Communication**: Control and read data from Matter devices directly within Node-RED.
+- **Flexibility**: Customize and configure the behavior of Matter devices based on your specific requirements.
+- **Seamless Integration**: Connect Matter devices to existing Node-RED flows effortlessly.
 
 [![demo](public/demo.png)](public/demo.mp4)
 
