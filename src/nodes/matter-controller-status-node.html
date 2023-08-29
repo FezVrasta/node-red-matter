@@ -1,35 +1,35 @@
 <script type="module">
-  const name = 'matter-device-status';
+  const name = 'matter-controller-status';
   RED.nodes.registerType(name, {
     category: 'Matter',
     color: '#959dc6',
     defaults: {
       name: { value: '' },
-      device: { value: '', type: 'matter-device' },
+      device: { value: '', type: 'matter-controller' },
     },
     outputs: 1,
     icon: 'matter-logo.svg',
     label: function () {
-      return this.name || 'Matter Device Status';
+      return this.name || 'Matter Controller Status';
     },
-    paletteLabel: 'Matter Device Status',
+    paletteLabel: 'Matter Controller Status',
   });
 </script>
 
-<script type="text/html" data-template-name="matter-device-status">
+<script type="text/html" data-template-name="matter-controller-status">
   <div class="form-row">
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
     <input type="text" id="node-input-name" placeholder="Name" />
   </div>
   <div class="form-row">
-    <label for="node-input-device">Matter Device</label>
+    <label for="node-input-device">Matter Controller</label>
     <input type="text" id="node-input-device" placeholder="Matter Device" />
   </div>
 </script>
 
-<script type="text/html" data-help-name="matter-device-status">
+<script type="text/html" data-help-name="matter-controller-status">
   <p>
-    Read the status of a Matter device. The status is returned in the
-    <code>msg.payload</code> as a JSON object.
+    Read the status of Matter controller-proxied devices. The status is returned
+    in the <code>msg.payload</code> as a JSON object.
   </p>
 </script>

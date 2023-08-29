@@ -10,8 +10,8 @@ interface MatterDeviceStatusNode extends Node {
   qrcode: string;
 }
 
-export default function (RED: NodeAPI) {
-  function MatterDeviceStatusNode(
+export function MatterDeviceStatusNode(RED: NodeAPI) {
+  return function (
     this: MatterDeviceStatusNode,
     config: MatterDeviceNodeConfig
   ) {
@@ -58,7 +58,9 @@ export default function (RED: NodeAPI) {
         }
       }
     );
-  }
+  };
+}
 
-  RED.nodes.registerType('matter-device-status', MatterDeviceStatusNode);
+export default function (RED: NodeAPI) {
+  RED.nodes.registerType('matter-device-status', MatterDeviceStatusNode(RED));
 }

@@ -12,7 +12,9 @@
       "matter-server": "lib/src/nodes/matter-server-node.js",
       "matter-device": "lib/src/nodes/matter-device-node.js",
       "matter-device-status": "lib/src/nodes/matter-device-status-node.js",
-      "matter-device-control": "lib/src/nodes/matter-device-control-node.js"
+      "matter-device-control": "lib/src/nodes/matter-device-control-node.js",
+      "matter-controller": "lib/src/nodes/matter-controller-node.js",
+      "matter-controller-status": "lib/src/nodes/matter-controller-status-node.js"
     }
   },
   "engines": {
@@ -27,9 +29,11 @@
   },
   "dependencies": {
     "@project-chip/matter-node.js": "^0.5.0",
-    "pick-port": "^1.0.1"
+    "pick-port": "^1.0.1",
+    "ts-deferred": "^1.0.4"
   },
   "devDependencies": {
+    "@types/bn.js": "^5.1.1",
     "@types/node": "^20.5.6",
     "@types/node-red": "^1.3.1",
     "glob": "^10.3.3",

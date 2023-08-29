@@ -224,6 +224,13 @@
   resolved "https://registry.yarnpkg.com/@types/ace/-/ace-0.0.48.tgz#1cb81872a282da1b49de16976d39e767e5ca435d"
   integrity sha512-esV6hOWiDOZ6d7w5S11iLu6LQsPGe/9RPzhri7gNNLdrK1LFpO9/m7IZhQL6dat0JHICJ7l51zvHAiCgnPLLHA==
 
+"@types/bn.js@^5.1.1":
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/@types/bn.js/-/bn.js-5.1.1.tgz#b51e1b55920a4ca26e9285ff79936bbdec910682"
+  integrity sha512-qNrYbZqMx0uJAfKnKclPh+dTwK33KfLHYqtyODwd5HnXOjnkhc4qgn3BrK6RWyGZm5+sIFE7Q7Vz6QQtJB7w7g==
+  dependencies:
+    "@types/node" "*"
+
 "@types/body-parser@*":
   version "1.19.2"
   resolved "https://registry.yarnpkg.com/@types/body-parser/-/body-parser-1.19.2.tgz#aea2059e28b7658639081347ac4fab3de166e6f0"
@@ -2341,6 +2348,11 @@ tr46@~0.0.3:
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
   integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
+
+ts-deferred@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/ts-deferred/-/ts-deferred-1.0.4.tgz#58145ebaeef5b8f2a290b8cec3d060839f9489c7"
+  integrity sha512-uE0e0mUQpqbS3VbqqauLDJ5x9kyHeMXGxRwmoXc+woXkEYWj/MiN61IsfPtlCzfxcVwlxy+S70aU05+atxeoPQ==
 
 ts-node@^10.9.1:
   version "10.9.1"

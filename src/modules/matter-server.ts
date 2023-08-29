@@ -32,7 +32,7 @@ switch (LOG_LEVEL) {
 }
 
 export class MatterServer {
-  private matterServer: MatterNodeServer | undefined;
+  matterServer: MatterNodeServer | undefined;
 
   async init({ storageLocation }: { storageLocation: string }) {
     const storage = new StorageBackendDisk(storageLocation);

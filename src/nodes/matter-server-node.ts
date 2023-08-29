@@ -1,11 +1,16 @@
 import type { NodeAPI, Node, NodeDef } from 'node-red';
 import { MatterServer } from '../modules/matter-server';
-import { CommissioningServer } from '@project-chip/matter-node.js';
-import { MatterDeviceNodeConfig } from './matter-device-node';
+import {
+  CommissioningServer,
+  MatterServer as MatterNodeServer,
+} from '@project-chip/matter-node.js';
+import { Deferred } from 'ts-deferred';
 
 interface MatterServerNodeConfig extends NodeDef {}
 
-interface MatterServerNode extends Node {}
+export interface MatterServerNode extends Node {
+  serverPromise: Promise<MatterNodeServer>;
+}
 
 export default function (RED: NodeAPI) {
   function MatterServerNode(
@@ -16,20 +21,30 @@ export default function (RED: NodeAPI) {
     RED.nodes.createNode(node, config);
 
     const devices = new Map<string, boolean>();
-    RED.nodes.eachNode((node: NodeDef) => {
-      if (node.type === 'matter-device') {
-        if ((node as MatterDeviceNodeConfig).server == null) return;
-
-        devices.set(node.id, false);
+    RED.nodes.eachNode((n: NodeDef) => {
+      if ((n as any).server === node.id) {
+        devices.set(n.id, false);
       }
     });
 
     const nodeRedFolderPath = RED.settings.userDir;
 
+    const deferred = new Deferred<MatterNodeServer>();
+    node.serverPromise = deferred.promise;
+
     const matterServer = new MatterServer();
     matterServer.init({
       storageLocation: `${nodeRedFolderPath}/node-red-matter/matter-servers/${node.id}`,
     });
+
+    console.log(devices);
+
+    if (devices.size === 0) {
+      node.log('Starting matter server');
+      matterServer.start().then(() => {
+        deferred.resolve(matterServer.matterServer);
+      });
+    }
 
     node.addListener(
       'add_commissioning_server',
@@ -47,6 +62,7 @@ export default function (RED: NodeAPI) {
         if (Array.from(devices.values()).every((value) => value)) {
           node.log('Starting matter server');
           await matterServer.start();
+          deferred.resolve(matterServer.matterServer);
         }
       }
     );

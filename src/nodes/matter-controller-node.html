@@ -1,0 +1,59 @@
+<script type="module">
+  const name = 'matter-controller';
+  RED.nodes.registerType(name, {
+    category: 'config',
+    color: '#a6bbcf',
+    defaults: {
+      name: { value: '' },
+      server: { type: 'matter-server', required: true },
+      pairingcode: { value: '', required: true },
+      port: {},
+      ip: {
+        value: '',
+      },
+    },
+    icon: 'matter-logo.svg',
+    label: function () {
+      return this.name || 'Matter Controller';
+    },
+    paletteLabel: 'Matter Controller',
+  });
+</script>
+
+<script type="text/html" data-template-name="matter-controller">
+  <div class="form-row">
+    <label for="node-config-input-name">Name</label>
+    <input type="text" id="node-config-input-name" placeholder="Name" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-server">Matter Server</label>
+    <input type="text" id="node-config-input-server" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-ip">Pairing Code</label>
+    <input type="string" id="node-config-input-pairingcode" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-ip">IP</label>
+    <input type="string" id="node-config-input-ip" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-port">UDP Port</label>
+    <input type="number" id="node-config-input-port" />
+  </div>
+
+  <div class="form-tips">
+    <strong>Tip:</strong> Leave IP and port empty for automatic detection.
+  </div>
+</script>
+
+<script type="text/html" data-help-name="matter-controller">
+  <p>
+    Creates a new Matter Controller that can be used to pair Matter devices and
+    expose them to Node-RED.
+  </p>
+</script>
