@@ -1,5 +1,6 @@
 import type { NodeAPI, Node, NodeDef } from 'node-red';
 import { DeviceType, MatterOnOffDevice } from '../modules/matter-device';
+import { MatterServerNode } from './matter-server-node';
 
 export interface MatterDeviceNodeConfig extends NodeDef {
   server: string;
@@ -12,6 +13,7 @@ export interface MatterDeviceNodeConfig extends NodeDef {
 interface MatterDeviceNode extends Node {
   qrcode: string;
   manualPairingCode: string;
+  commissioned: boolean;
 }
 
 export type StatusChangeMessage = {
@@ -30,6 +32,7 @@ export default function (RED: NodeAPI) {
     }
 
     const message = {
+      commissioned: node.commissioned,
       qrcode: node.qrcode,
       manualPairingCode: node.manualPairingCode,
     };
@@ -43,6 +46,8 @@ export default function (RED: NodeAPI) {
   ) {
     const node = this;
     RED.nodes.createNode(node, config);
+
+    const server = RED.nodes.getNode(config.server) as MatterServerNode;
 
     const matterDevice = new MatterOnOffDevice(
       config.devicetype,
@@ -62,25 +67,23 @@ export default function (RED: NodeAPI) {
           node.emit('status_change', message);
         },
       })
-      .then((message) => {
+      .then(async (commissioningServer) => {
         // Register device to Matter server
-        const commissioningServer = message.commissioningServer;
-        const matterServer = RED.nodes.getNode(config.server) as Node;
 
-        if (matterServer == null) {
+        if (server == null) {
           node.warn(`Matter server ${config.server} not found`);
           return;
         }
+        server.emit('add_commissioning_server', node.id, commissioningServer);
 
-        matterServer.emit(
-          'add_commissioning_server',
-          node.id,
-          commissioningServer
-        );
+        await server.serverPromise;
+
+        const message = await matterDevice.getPairingData();
 
         // Store pairing code
         node.qrcode = message.qrCode;
         node.manualPairingCode = message.manualPairingCode;
+        node.commissioned = message.commissioned;
 
         // Handle device updates
         if (matterDevice.device == null) {
@@ -101,8 +104,7 @@ export default function (RED: NodeAPI) {
           default:
             node.warn(`Unknown device type ${config.devicetype}`);
         }
-      })
-      .catch((err) => console.error(err));
+      });
 
     // Receive status change requests from matter-device-control nodes
     node.addListener('change_status', (status) => {

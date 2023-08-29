@@ -61,6 +61,12 @@
 
           document.getElementById('node-config-input-manual-pairing').value =
             data.manualPairingCode;
+
+          if (data.commissioned) {
+            document.getElementById(
+              'node-config-commission-instructions'
+            ).innerText = 'This device is already paired.';
+          }
         }
       );
     },
@@ -124,7 +130,7 @@
     To generate a pairing code, deploy this node first.
   </p>
   <div id="node-config-pairing" hidden>
-    <p>
+    <p id="node-config-commission-instructions">
       Scan the QR code in your Matter controller app (Apple Home, Google Home,
       Alexa, etc...) to pair this device. We suggest to give this device the
       same name as this node to make it easier to find it later.

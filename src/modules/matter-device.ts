@@ -16,14 +16,15 @@ export enum DeviceType {
   OnOffLightDevice = 'OnOffLightDevice',
 }
 interface CommissionMessage {
-  commissioningServer: CommissioningServer;
   qrCode: string;
   qrPairingCode: string;
   manualPairingCode: string;
   qrCodeUrl: string;
+  commissioned: boolean;
 }
 
 export class MatterOnOffDevice {
+  commissioningServer: CommissioningServer | undefined;
   uniqueId: string;
   device: OnOffPluginUnitDevice | OnOffLightDevice | undefined;
 
@@ -58,7 +59,7 @@ export class MatterOnOffDevice {
     onStatusChange,
   }: {
     onStatusChange: (isOn: boolean | undefined) => void;
-  }): Promise<CommissionMessage> {
+  }): Promise<CommissioningServer> {
     const port: number =
       this.port === 0
         ? await pickPort({ type: 'udp', minPort: 5400, maxPort: 5540 })
@@ -115,8 +116,16 @@ export class MatterOnOffDevice {
     });
 
     commissioningServer.addDevice(this.device);
+    this.commissioningServer = commissioningServer;
 
     logEndpoint(commissioningServer.getRootEndpoint());
+    return commissioningServer;
+  }
+
+  async getPairingData(): Promise<CommissionMessage> {
+    if (this.commissioningServer == null) {
+      throw new Error('Commissioning server not initialized');
+    }
 
     /**
      * Print Pairing Information
@@ -125,7 +134,8 @@ export class MatterOnOffDevice {
      * pairing details. This includes the QR code that can be scanned by the Matter app to pair the device.
      */
 
-    const pairingData = commissioningServer.getPairingCode({
+    const commissioned = this.commissioningServer.isCommissioned();
+    const pairingData = this.commissioningServer.getPairingCode({
       ble: false,
       softAccessPoint: false,
       onIpNetwork: false,
@@ -134,11 +144,11 @@ export class MatterOnOffDevice {
     const { qrCode, qrPairingCode, manualPairingCode } = pairingData;
 
     return {
-      commissioningServer,
       qrCode,
       qrPairingCode,
       manualPairingCode,
       qrCodeUrl: `https://project-chip.github.io/connectedhomeip/qrcode.html?data=${qrPairingCode}`,
+      commissioned,
     };
   }
 }

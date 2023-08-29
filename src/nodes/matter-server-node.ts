@@ -45,9 +45,11 @@ export default function (RED: NodeAPI) {
       });
 
     if (devices.size === 0) {
-      node.log('Starting matter server');
-      matterServer.start().then(() => {
-        serverStart.resolve(matterServer.matterServer);
+      serverInit.promise.then(() => {
+        node.log('Starting matter server');
+        matterServer.start().then(() => {
+          serverStart.resolve(matterServer.matterServer);
+        });
       });
     }
 
@@ -100,6 +102,7 @@ export default function (RED: NodeAPI) {
 
     node.on('close', async (done: () => void) => {
       node.log('Stopping matter server');
+      await serverInit.promise;
       await matterServer.stop();
       done();
     });
