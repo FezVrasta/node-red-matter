@@ -3,11 +3,6 @@ import {
   OnOffLightDevice,
   OnOffPluginUnitDevice,
 } from '@project-chip/matter-node.js/device';
-import { Level, Logger } from '@project-chip/matter-node.js/log';
-import {
-  StorageBackendDisk,
-  StorageManager,
-} from '@project-chip/matter-node.js/storage';
 import {
   commandExecutor,
   logEndpoint,
@@ -15,8 +10,6 @@ import {
 import { DeviceTypeId, VendorId } from '@project-chip/matter.js/datatype';
 // @ts-ignore
 import pickPort from 'pick-port';
-
-Logger.defaultLogLevel = Level.FATAL;
 
 export enum DeviceType {
   OnOffPluginUnitDevice = 'OnOffPluginUnitDevice',
@@ -62,27 +55,14 @@ export class MatterOnOffDevice {
   }
 
   async start({
-    storageLocation,
     onStatusChange,
   }: {
-    storageLocation: string;
     onStatusChange: (isOn: boolean | undefined) => void;
   }): Promise<CommissionMessage> {
     const port: number =
       this.port === 0
         ? await pickPort({ type: 'udp', minPort: 5400, maxPort: 5540 })
         : this.port;
-    const storage = new StorageBackendDisk(storageLocation);
-
-    /**
-     * Initialize the storage system.
-     *
-     * The storage manager is then also used by the Matter server, so this code block in general is required,
-     * but you can choose a different storage backend as long as it implements the required API.
-     */
-
-    const storageManager = new StorageManager(storage);
-    await storageManager.initialize();
 
     /**
      * Create Device instance and add needed Listener

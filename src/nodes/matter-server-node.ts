@@ -38,16 +38,24 @@ export default function (RED: NodeAPI) {
 
         try {
           matterServer.addCommissioningServer(commissioningServer);
+          node.log(`Added commissioning server for ${nodeId}`);
         } catch (e) {
           node.error(e);
         }
 
         // Only start the server after all the devices have been added or failed to be added
         if (Array.from(devices.values()).every((value) => value)) {
+          node.log('Starting matter server');
           await matterServer.start();
         }
       }
     );
+
+    node.on('close', async (done: () => void) => {
+      node.log('Stopping matter server');
+      await matterServer.stop();
+      done();
+    });
   }
 
   RED.nodes.registerType('matter-server', MatterServerNode);

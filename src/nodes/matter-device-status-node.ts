@@ -26,6 +26,11 @@ export default function (RED: NodeAPI) {
       text: 'unknown',
     });
 
+    if (matterDeviceNode == null) {
+      node.error(`Associated matter-device node (${config.device}) not found`);
+      return;
+    }
+
     matterDeviceNode.addListener(
       'status_change',
       (status: StatusChangeMessage) => {

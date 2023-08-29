@@ -1,4 +1,3 @@
-
 # Node-RED Matter Plugin
 
 The Node-RED Matter plugin is an open-source project that enables the generation of Matter devices within Node-RED.
@@ -34,6 +33,10 @@ To use the Node-RED Matter plugin, please follow these instructions:
 3. In the node configuration, create a new Matter device or select an existing device.
 4. Establish the required connections between the Matter device node and other nodes in your flow.
 5. Deploy your Node-RED flow to make the Matter device available for control and data retrieval.
+
+## 📚 Documentation
+
+Find the documentation our our [wiki](https://github.com/FezVrasta/node-red-matter/wiki).
 
 ## ⛔ Limitations
 

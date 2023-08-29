@@ -52,11 +52,8 @@ export default function (RED: NodeAPI) {
       Number(config.productid ?? 0x8000)
     );
 
-    const nodeRedFolderPath = RED.settings.userDir;
-
     matterDevice
       .start({
-        storageLocation: `${nodeRedFolderPath}/node-red-matter/matter-devices/${this.id}`,
         onStatusChange: (status) => {
           const message: StatusChangeMessage = {
             type: config.devicetype,
