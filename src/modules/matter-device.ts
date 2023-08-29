@@ -1,24 +1,4 @@
-#!/usr/bin/env node
-/**
- * @license
- * Copyright 2022 The node-matter Authors
- * SPDX-License-Identifier: Apache-2.0
- */
-
-/**
- * This example shows how to create a simple on-off Matter device.
- * It can be used as CLI script and starting point for your own device node implementation.
- */
-
-/**
- * Import needed modules from @project-chip/matter-node.js
- */
-// Include this first to auto-register Crypto, Network and Time Node.js implementations
-import {
-  CommissioningServer,
-  MatterServer,
-} from '@project-chip/matter-node.js';
-
+import { CommissioningServer } from '@project-chip/matter-node.js';
 import {
   OnOffLightDevice,
   OnOffPluginUnitDevice,
@@ -43,6 +23,7 @@ export enum DeviceType {
   OnOffLightDevice = 'OnOffLightDevice',
 }
 interface CommissionMessage {
+  commissioningServer: CommissioningServer;
   qrCode: string;
   qrPairingCode: string;
   manualPairingCode: string;
@@ -50,7 +31,6 @@ interface CommissionMessage {
 }
 
 export class MatterOnOffDevice {
-  private matterServer: MatterServer | undefined;
   uniqueId: string;
   device: OnOffPluginUnitDevice | OnOffLightDevice | undefined;
 
@@ -63,18 +43,20 @@ export class MatterOnOffDevice {
   // product name / id and vendor id should match what is in the device certificate
   vendorId = 0xfff1;
   productName: string;
-  productId = 0x8000;
+  productId: number;
 
   constructor(
     deviceType: DeviceType,
     port: number,
     uniqueId: string,
-    discriminator: number
+    discriminator: number,
+    productId: number
   ) {
     this.port = Number(port);
     this.deviceType = deviceType;
     this.uniqueId = uniqueId;
     this.discriminator = discriminator;
+    this.productId = productId;
 
     this.productName = this.deviceType.substring(0, 32);
   }
@@ -85,7 +67,7 @@ export class MatterOnOffDevice {
   }: {
     storageLocation: string;
     onStatusChange: (isOn: boolean | undefined) => void;
-  }): Promise<CommissionMessage | undefined> {
+  }): Promise<CommissionMessage> {
     const port: number =
       this.port === 0
         ? await pickPort({ type: 'udp', minPort: 5400, maxPort: 5540 })
@@ -134,21 +116,6 @@ export class MatterOnOffDevice {
       onStatusChange(on);
     });
 
-    /**
-     * Create Matter Server and CommissioningServer Node
-     *
-     * To allow the device to be announced, found, paired and operated we need a MatterServer instance and add a
-     * commissioningServer to it and add the just created device instance to it.
-     * The CommissioningServer node defines the port where the server listens for the UDP packages of the Matter protocol
-     * and initializes deice specific certificates and such.
-     *
-     * The below logic also adds command handlers for commands of clusters that normally are handled internally
-     * like testEventTrigger (General Diagnostic Cluster) that can be implemented with the logic when these commands
-     * are called.
-     */
-
-    this.matterServer = new MatterServer(storageManager);
-
     const commissioningServer = new CommissioningServer({
       port,
       deviceName: this.deviceName,
@@ -169,17 +136,6 @@ export class MatterOnOffDevice {
 
     commissioningServer.addDevice(this.device);
 
-    this.matterServer.addCommissioningServer(commissioningServer);
-
-    /**
-     * Start the Matter Server
-     *
-     * After everything was plugged together we can start the server. When not delayed announcement is set for the
-     * CommissioningServer node then this command also starts the announcement of the device into the network.
-     */
-
-    await this.matterServer.start();
-
     logEndpoint(commissioningServer.getRootEndpoint());
 
     /**
@@ -198,14 +154,11 @@ export class MatterOnOffDevice {
     const { qrCode, qrPairingCode, manualPairingCode } = pairingData;
 
     return {
+      commissioningServer,
       qrCode,
       qrPairingCode,
       manualPairingCode,
       qrCodeUrl: `https://project-chip.github.io/connectedhomeip/qrcode.html?data=${qrPairingCode}`,
     };
-  }
-
-  async stop() {
-    await this.matterServer?.close();
   }
 }

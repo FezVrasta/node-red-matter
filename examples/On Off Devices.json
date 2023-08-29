@@ -2,7 +2,7 @@
   {
     "id": "df568367a0db7caf",
     "type": "tab",
-    "label": "Node-RED Matter - On Off Devices",
+    "label": "Node-RED Matter - On/Off",
     "disabled": false,
     "info": "",
     "env": []
@@ -30,28 +30,6 @@
     "h": 242
   },
   {
-    "id": "b5050975b9e1e3d1",
-    "type": "group",
-    "z": "df568367a0db7caf",
-    "name": "Matter Light 2",
-    "style": {
-      "fill": "#dbcbe7",
-      "label": true,
-      "color": "#6f2fa0"
-    },
-    "nodes": [
-      "b022df774d8d9ecb",
-      "7c64ee1eea1a73ac",
-      "b86b2f5f3dde2201",
-      "4339565c2ec6b305",
-      "0d2f2b6e840db858"
-    ],
-    "x": 854,
-    "y": 139,
-    "w": 412,
-    "h": 242
-  },
-  {
     "id": "f4f5c22e843c5657",
     "type": "group",
     "z": "df568367a0db7caf",
@@ -64,16 +42,16 @@
     "nodes": [
       "ebe9df65470f5a22",
       "5f272ae264c19657",
-      "ed4ce3d9aefbefc9",
       "c5b7ffe70ce2272a",
       "47e77aa534a048d7",
-      "dd05132cf47e62e9",
       "36b1071665e2244a",
-      "b7484b38b0a37f33"
+      "b7484b38b0a37f33",
+      "ed4ce3d9aefbefc9",
+      "dd05132cf47e62e9"
     ],
     "x": 854,
     "y": 419,
-    "w": 592,
+    "w": 612,
     "h": 362
   },
   {
@@ -96,15 +74,37 @@
     ],
     "x": 394,
     "y": 419,
-    "w": 412,
+    "w": 432,
     "h": 282
+  },
+  {
+    "id": "b5050975b9e1e3d1",
+    "type": "group",
+    "z": "df568367a0db7caf",
+    "name": "Matter Light 2",
+    "style": {
+      "fill": "#dbcbe7",
+      "label": true,
+      "color": "#6f2fa0"
+    },
+    "nodes": [
+      "b022df774d8d9ecb",
+      "7c64ee1eea1a73ac",
+      "b86b2f5f3dde2201",
+      "4339565c2ec6b305",
+      "0d2f2b6e840db858"
+    ],
+    "x": 854,
+    "y": 139,
+    "w": 412,
+    "h": 242
   },
   {
     "id": "dec7271b92591a18",
     "type": "matter-device-status",
     "z": "df568367a0db7caf",
     "g": "d2058fcf6d2d4382",
-    "name": "NR1 Status",
+    "name": "Light 1 Status",
     "device": "206e145982b938d8",
     "x": 490,
     "y": 180,
@@ -132,9 +132,9 @@
     "type": "matter-device-control",
     "z": "df568367a0db7caf",
     "g": "d2058fcf6d2d4382",
-    "name": "NR1 Control",
+    "name": "Light 1 Control",
     "device": "206e145982b938d8",
-    "x": 690,
+    "x": 700,
     "y": 300,
     "wires": []
   },
@@ -143,7 +143,7 @@
     "type": "inject",
     "z": "df568367a0db7caf",
     "g": "d2058fcf6d2d4382",
-    "name": "",
+    "name": "On",
     "props": [
       {
         "p": "payload"
@@ -165,7 +165,7 @@
     "type": "inject",
     "z": "df568367a0db7caf",
     "g": "d2058fcf6d2d4382",
-    "name": "",
+    "name": "Off",
     "props": [
       {
         "p": "payload"
@@ -183,96 +183,13 @@
     "wires": [["589e9b2890f4549b"]]
   },
   {
-    "id": "b022df774d8d9ecb",
-    "type": "matter-device-status",
-    "z": "df568367a0db7caf",
-    "g": "b5050975b9e1e3d1",
-    "name": "NR2 Status",
-    "device": "0d95935a3715df28",
-    "x": 950,
-    "y": 180,
-    "wires": [["7c64ee1eea1a73ac"]]
-  },
-  {
-    "id": "7c64ee1eea1a73ac",
-    "type": "debug",
-    "z": "df568367a0db7caf",
-    "g": "b5050975b9e1e3d1",
-    "name": "debug 2",
-    "active": true,
-    "tosidebar": true,
-    "console": false,
-    "tostatus": false,
-    "complete": "false",
-    "statusVal": "",
-    "statusType": "auto",
-    "x": 1160,
-    "y": 180,
-    "wires": []
-  },
-  {
-    "id": "b86b2f5f3dde2201",
-    "type": "inject",
-    "z": "df568367a0db7caf",
-    "g": "b5050975b9e1e3d1",
-    "name": "",
-    "props": [
-      {
-        "p": "payload"
-      }
-    ],
-    "repeat": "",
-    "crontab": "",
-    "once": false,
-    "onceDelay": 0.1,
-    "topic": "",
-    "payload": "true",
-    "payloadType": "bool",
-    "x": 950,
-    "y": 260,
-    "wires": [["0d2f2b6e840db858"]]
-  },
-  {
-    "id": "4339565c2ec6b305",
-    "type": "inject",
-    "z": "df568367a0db7caf",
-    "g": "b5050975b9e1e3d1",
-    "name": "",
-    "props": [
-      {
-        "p": "payload"
-      }
-    ],
-    "repeat": "",
-    "crontab": "",
-    "once": false,
-    "onceDelay": 0.1,
-    "topic": "",
-    "payload": "false",
-    "payloadType": "bool",
-    "x": 950,
-    "y": 340,
-    "wires": [["0d2f2b6e840db858"]]
-  },
-  {
-    "id": "0d2f2b6e840db858",
-    "type": "matter-device-control",
-    "z": "df568367a0db7caf",
-    "g": "b5050975b9e1e3d1",
-    "name": "NR2 Control",
-    "device": "0d95935a3715df28",
-    "x": 1150,
-    "y": 300,
-    "wires": []
-  },
-  {
     "id": "d7599f0cd09e447e",
     "type": "matter-device-control",
     "z": "df568367a0db7caf",
     "g": "f7e9a9751d6a80d1",
-    "name": "NR1 Control",
+    "name": "Light 1 Control",
     "device": "206e145982b938d8",
-    "x": 710,
+    "x": 720,
     "y": 460,
     "wires": []
   },
@@ -281,9 +198,9 @@
     "type": "matter-device-control",
     "z": "df568367a0db7caf",
     "g": "f7e9a9751d6a80d1",
-    "name": "NR2 Control",
+    "name": "Light 2 Control",
     "device": "0d95935a3715df28",
-    "x": 710,
+    "x": 720,
     "y": 520,
     "wires": []
   },
@@ -292,7 +209,7 @@
     "type": "inject",
     "z": "df568367a0db7caf",
     "g": "f7e9a9751d6a80d1",
-    "name": "",
+    "name": "On",
     "props": [
       {
         "p": "payload"
@@ -314,7 +231,7 @@
     "type": "inject",
     "z": "df568367a0db7caf",
     "g": "f7e9a9751d6a80d1",
-    "name": "",
+    "name": "Off",
     "props": [
       {
         "p": "payload"
@@ -336,7 +253,7 @@
     "type": "matter-device-status",
     "z": "df568367a0db7caf",
     "g": "f4f5c22e843c5657",
-    "name": "NR3 Status",
+    "name": "Outlet 1 Status",
     "device": "e36fddd5083cfc44",
     "x": 950,
     "y": 520,
@@ -364,7 +281,7 @@
     "type": "inject",
     "z": "df568367a0db7caf",
     "g": "f4f5c22e843c5657",
-    "name": "",
+    "name": "On",
     "props": [
       {
         "p": "payload"
@@ -386,7 +303,7 @@
     "type": "inject",
     "z": "df568367a0db7caf",
     "g": "f4f5c22e843c5657",
-    "name": "",
+    "name": "Off",
     "props": [
       {
         "p": "payload"
@@ -404,36 +321,14 @@
     "wires": [["ed4ce3d9aefbefc9"]]
   },
   {
-    "id": "ed4ce3d9aefbefc9",
-    "type": "matter-device-control",
-    "z": "df568367a0db7caf",
-    "g": "f4f5c22e843c5657",
-    "name": "NR3 Control",
-    "device": "e36fddd5083cfc44",
-    "x": 1150,
-    "y": 700,
-    "wires": []
-  },
-  {
     "id": "3106480b74de4e15",
     "type": "matter-device-control",
     "z": "df568367a0db7caf",
     "g": "f7e9a9751d6a80d1",
-    "name": "NR3 Control",
+    "name": "Outlet 1 Control",
     "device": "e36fddd5083cfc44",
-    "x": 710,
+    "x": 720,
     "y": 580,
-    "wires": []
-  },
-  {
-    "id": "dd05132cf47e62e9",
-    "type": "matter-device-control",
-    "z": "df568367a0db7caf",
-    "g": "f4f5c22e843c5657",
-    "name": "NR1 Control",
-    "device": "206e145982b938d8",
-    "x": 1350,
-    "y": 520,
     "wires": []
   },
   {
@@ -441,7 +336,7 @@
     "type": "change",
     "z": "df568367a0db7caf",
     "g": "f4f5c22e843c5657",
-    "name": "",
+    "name": "Forward status",
     "rules": [
       {
         "t": "set",
@@ -476,34 +371,150 @@
     "type": "comment",
     "z": "df568367a0db7caf",
     "g": "f4f5c22e843c5657",
-    "name": "Make NR1 reflect the NR2 status changes",
+    "name": "Make Light 1 reflect the Outlet 1 status changes",
     "info": "",
-    "x": 1040,
+    "x": 1060,
     "y": 580,
+    "wires": []
+  },
+  {
+    "id": "b022df774d8d9ecb",
+    "type": "matter-device-status",
+    "z": "df568367a0db7caf",
+    "g": "b5050975b9e1e3d1",
+    "name": "Light 2 Status",
+    "device": "0d95935a3715df28",
+    "x": 950,
+    "y": 180,
+    "wires": [["7c64ee1eea1a73ac"]]
+  },
+  {
+    "id": "7c64ee1eea1a73ac",
+    "type": "debug",
+    "z": "df568367a0db7caf",
+    "g": "b5050975b9e1e3d1",
+    "name": "debug 2",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "false",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 1160,
+    "y": 180,
+    "wires": []
+  },
+  {
+    "id": "b86b2f5f3dde2201",
+    "type": "inject",
+    "z": "df568367a0db7caf",
+    "g": "b5050975b9e1e3d1",
+    "name": "On",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "true",
+    "payloadType": "bool",
+    "x": 950,
+    "y": 260,
+    "wires": [["0d2f2b6e840db858"]]
+  },
+  {
+    "id": "4339565c2ec6b305",
+    "type": "inject",
+    "z": "df568367a0db7caf",
+    "g": "b5050975b9e1e3d1",
+    "name": "Off",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "false",
+    "payloadType": "bool",
+    "x": 950,
+    "y": 340,
+    "wires": [["0d2f2b6e840db858"]]
+  },
+  {
+    "id": "ed4ce3d9aefbefc9",
+    "type": "matter-device-control",
+    "z": "df568367a0db7caf",
+    "g": "f4f5c22e843c5657",
+    "name": "Outlet 1 Control",
+    "device": "e36fddd5083cfc44",
+    "x": 1160,
+    "y": 700,
+    "wires": []
+  },
+  {
+    "id": "dd05132cf47e62e9",
+    "type": "matter-device-control",
+    "z": "df568367a0db7caf",
+    "g": "f4f5c22e843c5657",
+    "name": "Light 1 Control",
+    "device": "206e145982b938d8",
+    "x": 1360,
+    "y": 520,
+    "wires": []
+  },
+  {
+    "id": "0d2f2b6e840db858",
+    "type": "matter-device-control",
+    "z": "df568367a0db7caf",
+    "g": "b5050975b9e1e3d1",
+    "name": "Light 2 Control",
+    "device": "0d95935a3715df28",
+    "x": 1160,
+    "y": 300,
     "wires": []
   },
   {
     "id": "206e145982b938d8",
     "type": "matter-device",
-    "name": "NR1",
+    "name": "Light 1",
+    "server": "3646c2d03ad32af0",
     "devicetype": "OnOffLightDevice",
     "port": "0",
-    "discriminator": "470"
+    "discriminator": "470",
+    "productid": "0x8000"
   },
   {
     "id": "0d95935a3715df28",
     "type": "matter-device",
-    "name": "NR2",
+    "name": "Light 2",
+    "server": "3646c2d03ad32af0",
     "devicetype": "OnOffLightDevice",
     "port": "0",
-    "discriminator": "2906"
+    "discriminator": "2906",
+    "productid": "0x8000"
   },
   {
     "id": "e36fddd5083cfc44",
     "type": "matter-device",
-    "name": "NR3",
+    "name": "Outlet 1",
+    "server": "3646c2d03ad32af0",
     "devicetype": "OnOffPluginUnitDevice",
     "port": "0",
-    "discriminator": "2111"
+    "discriminator": "2111",
+    "productid": "0x8000"
+  },
+  {
+    "id": "3646c2d03ad32af0",
+    "type": "matter-server",
+    "name": "Matter Server 1"
   }
 ]

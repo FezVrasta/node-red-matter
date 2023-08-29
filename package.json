@@ -9,6 +9,7 @@
   "node-red": {
     "version": ">=2.0.0",
     "nodes": {
+      "matter-server": "lib/src/nodes/matter-server-node.js",
       "matter-device": "lib/src/nodes/matter-device-node.js",
       "matter-device-status": "lib/src/nodes/matter-device-status-node.js",
       "matter-device-control": "lib/src/nodes/matter-device-control-node.js"

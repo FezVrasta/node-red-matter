@@ -1,0 +1,36 @@
+<script type="module">
+  const name = 'matter-server';
+  RED.nodes.registerType(name, {
+    category: 'config',
+    color: '#a6bbcf',
+    defaults: {
+      name: { value: '' },
+    },
+    icon: 'matter-logo.svg',
+    label: function () {
+      return this.name || 'Matter Server';
+    },
+  });
+</script>
+
+<script type="text/html" data-template-name="matter-server">
+  <p>
+    A Matter Server node is required to attach virtual devices to it, the server
+    will take care of all the infra-communication between devices.
+  </p>
+  <p>
+    You will usually need only one server node. Keep in mind each device will
+    still require its dedicated UDP port.
+  </p>
+  <div class="form-row">
+    <label for="node-config-input-name">Name</label>
+    <input type="text" id="node-config-input-name" placeholder="Name" />
+  </div>
+</script>
+
+<script type="text/html" data-help-name="matter-server">
+  <p>
+    Defines a Matter server that can be used by other nodes to expose devices
+    and scenes to Matter controllers.
+  </p>
+</script>

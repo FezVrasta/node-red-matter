@@ -1,10 +1,12 @@
 import type { NodeAPI, Node, NodeDef } from 'node-red';
-import { DeviceType, MatterOnOffDevice } from '../modules/matter-on-off-device';
+import { DeviceType, MatterOnOffDevice } from '../modules/matter-device';
 
-interface MatterDeviceNodeConfig extends NodeDef {
+export interface MatterDeviceNodeConfig extends NodeDef {
+  server: string;
   devicetype: DeviceType;
   port: number;
   discriminator: number;
+  productid: string;
 }
 
 interface MatterDeviceNode extends Node {
@@ -46,7 +48,8 @@ export default function (RED: NodeAPI) {
       config.devicetype,
       Number(config.port),
       node.id,
-      Number(config.discriminator)
+      Number(config.discriminator),
+      Number(config.productid ?? 0x8000)
     );
 
     const nodeRedFolderPath = RED.settings.userDir;
@@ -63,36 +66,48 @@ export default function (RED: NodeAPI) {
         },
       })
       .then((message) => {
-        if (message) {
-          node.qrcode = message.qrCode;
-          node.manualPairingCode = message.manualPairingCode;
+        // Register device to Matter server
+        const commissioningServer = message.commissioningServer;
+        const matterServer = RED.nodes.getNode(config.server) as Node;
 
-          if (matterDevice.device == null) {
-            return;
-          }
+        if (matterServer == null) {
+          node.warn(`Matter server ${config.server} not found`);
+          return;
+        }
 
-          switch (config.devicetype) {
-            case DeviceType.OnOffLightDevice:
-            case DeviceType.OnOffPluginUnitDevice:
-              matterDevice.device.isOn().then((status) => {
-                const updateStatusMessage: StatusChangeMessage = {
-                  type: config.devicetype,
-                  status,
-                };
-                node.emit('status_change', updateStatusMessage);
-              });
-              break;
-            default:
-              node.warn(`Unknown device type ${config.devicetype}`);
-          }
+        matterServer.emit(
+          'add_commissioning_server',
+          node.id,
+          commissioningServer
+        );
+
+        // Store pairing code
+        node.qrcode = message.qrCode;
+        node.manualPairingCode = message.manualPairingCode;
+
+        // Handle device updates
+        if (matterDevice.device == null) {
+          return;
+        }
+
+        switch (config.devicetype) {
+          case DeviceType.OnOffLightDevice:
+          case DeviceType.OnOffPluginUnitDevice:
+            matterDevice.device.isOn().then((status) => {
+              const updateStatusMessage: StatusChangeMessage = {
+                type: config.devicetype,
+                status,
+              };
+              node.emit('status_change', updateStatusMessage);
+            });
+            break;
+          default:
+            node.warn(`Unknown device type ${config.devicetype}`);
         }
       })
       .catch((err) => console.error(err));
 
-    node.on('close', (done: () => void) => {
-      matterDevice.stop().then(() => done());
-    });
-
+    // Receive status change requests from matter-device-control nodes
     node.addListener('change_status', (status) => {
       if (matterDevice.device == null) {
         return;

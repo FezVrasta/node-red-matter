@@ -5,6 +5,7 @@
     color: '#a6bbcf',
     defaults: {
       name: { value: '' },
+      server: { type: 'matter-server', required: true },
       devicetype: {
         value: 'OnOffLightDevice',
         required: true,
@@ -16,10 +17,8 @@
         value: '0',
         required: true,
         validate: RED.validators.number(),
-        type: 'number',
       },
       discriminator: {
-        type: 'number',
         validate: (value) => {
           if (value < 0 || value > 4095) {
             return false;
@@ -27,11 +26,16 @@
           return true;
         },
       },
+      productid: {
+        value: '0x8000',
+        validate: RED.validators.regex(/^0x[0-9a-fA-F]{4}$/),
+      },
     },
     icon: 'matter-logo.svg',
     label: function () {
       return this.name || 'Matter Device';
     },
+    paletteLabel: 'Matter Device',
     oneditprepare: function () {
       const discriminatorInput = document.getElementById(
         'node-config-input-discriminator'
@@ -46,6 +50,10 @@
           document.getElementById(
             'node-config-input-devicetype'
           ).disabled = true;
+          document.getElementById(
+            'node-config-input-productid'
+          ).disabled = true;
+
           document.getElementById('node-config-pairing').hidden = false;
           document.getElementById('node-config-notready').hidden = true;
           document.getElementById('node-config-input-pairing').innerText =
@@ -66,11 +74,13 @@
   </div>
 
   <div class="form-row">
-    <label for="node-config-input-devicetype">Device Type</label>
-    <select id="node-config-input-devicetype">
-      <option value="OnOffLightDevice">On/Off Light</option>
-      <option value="OnOffPluginUnitDevice">On/Off Plug</option>
-    </select>
+    <label for="node-config-input-server">Matter Server</label>
+    <input type="text" id="node-config-input-server" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-discriminator">Discriminator</label>
+    <input type="text" id="node-config-input-discriminator" />
   </div>
 
   <div class="form-row">
@@ -82,12 +92,32 @@
     />
   </div>
 
-  <p>Leave this 0 to let the node pick a random free port number.</p>
+  <div class="form-tips">
+    <strong>Tip:</strong> Leave this 0 to let the node pick a random free port
+    number.
+  </div>
+
+  <hr />
+
+  <h3>Device Information</h3>
+  <div class="form-row">
+    <label for="node-config-input-devicetype">Device Type</label>
+    <select id="node-config-input-devicetype">
+      <option value="OnOffLightDevice">On/Off Light</option>
+      <option value="OnOffPluginUnitDevice">On/Off Plug</option>
+    </select>
+  </div>
 
   <div class="form-row">
-    <label for="node-config-input-discriminator">Discriminator</label>
-    <input type="text" id="node-config-input-discriminator" />
+    <label for="node-config-input-discriminator">Product ID</label>
+    <input type="text" id="node-config-input-productid" />
   </div>
+
+  <div class="form-tips">
+    <strong>Tip:</strong> Device type and product ID can't be changed once the
+    node is deployed.
+  </div>
+  <hr />
 
   <h3>Pairing</h3>
   <p id="node-config-notready">
@@ -100,15 +130,11 @@
       same name as this node to make it easier to find it later.
     </p>
     <div class="form-row">
-      <label for="node-config-input-pairing">
-        <i class="fa fa-qrcode"></i> QR Code
-      </label>
+      <label for="node-config-input-pairing">QR Code</label>
       <pre style="line-height: 1" id="node-config-input-pairing"></pre>
     </div>
     <div class="form-row">
-      <label for="node-config-input-manual-pairing">
-        <i class="fa fa-key"></i> Code
-      </label>
+      <label for="node-config-input-manual-pairing">Manual Pairing Code</label>
       <input type="text" id="node-config-input-manual-pairing" readonly />
     </div>
   </div>
