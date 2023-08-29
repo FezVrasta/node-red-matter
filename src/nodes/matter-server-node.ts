@@ -1,6 +1,7 @@
 import type { NodeAPI, Node, NodeDef } from 'node-red';
 import { MatterServer } from '../modules/matter-server';
 import {
+  CommissioningController,
   CommissioningServer,
   MatterServer as MatterNodeServer,
 } from '@project-chip/matter-node.js';
@@ -29,26 +30,31 @@ export default function (RED: NodeAPI) {
 
     const nodeRedFolderPath = RED.settings.userDir;
 
-    const deferred = new Deferred<MatterNodeServer>();
-    node.serverPromise = deferred.promise;
+    const serverInit = new Deferred<void>();
+
+    const serverStart = new Deferred<MatterNodeServer>();
+    node.serverPromise = serverStart.promise;
 
     const matterServer = new MatterServer();
-    matterServer.init({
-      storageLocation: `${nodeRedFolderPath}/node-red-matter/matter-servers/${node.id}`,
-    });
-
-    console.log(devices);
+    matterServer
+      .init({
+        storageLocation: `${nodeRedFolderPath}/node-red-matter/matter-servers/${node.id}`,
+      })
+      .then(() => {
+        serverInit.resolve();
+      });
 
     if (devices.size === 0) {
       node.log('Starting matter server');
       matterServer.start().then(() => {
-        deferred.resolve(matterServer.matterServer);
+        serverStart.resolve(matterServer.matterServer);
       });
     }
 
     node.addListener(
       'add_commissioning_server',
       async (nodeId: string, commissioningServer: CommissioningServer) => {
+        await serverInit.promise;
         devices.set(nodeId, true);
 
         try {
@@ -62,7 +68,32 @@ export default function (RED: NodeAPI) {
         if (Array.from(devices.values()).every((value) => value)) {
           node.log('Starting matter server');
           await matterServer.start();
-          deferred.resolve(matterServer.matterServer);
+          serverStart.resolve(matterServer.matterServer);
+        }
+      }
+    );
+
+    node.addListener(
+      'add_commissioning_controller',
+      async (
+        nodeId: string,
+        commissioningController: CommissioningController
+      ) => {
+        await serverInit.promise;
+        devices.set(nodeId, true);
+
+        matterServer.addCommissioningController(commissioningController);
+
+        // Only start the server after all the devices have been added or failed to be added
+        if (Array.from(devices.values()).every((value) => value)) {
+          node.log('Starting matter server');
+          await matterServer.start();
+          try {
+            await commissioningController.connect();
+          } catch (e) {
+            node.error(e);
+          }
+          serverStart.resolve(matterServer.matterServer);
         }
       }
     );

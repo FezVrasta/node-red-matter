@@ -28,22 +28,25 @@ export default function (RED: NodeAPI) {
       return;
     }
 
-    server.serverPromise.then((matterServer) => {
-      console.log('got a server');
-      const controller = new MatterController(matterServer);
+    const controller = new MatterController(
+      config.pairingcode,
+      config.ip,
+      config.port
+    );
 
-      controller
-        .pair(config.pairingcode, config.ip, config.port, (status) => {
-          console.log('status', status);
-          const updateStatusMessage: StatusChangeMessage = {
-            type: DeviceType.OnOffLightDevice,
-            status,
-          };
-          node.emit('status_change', updateStatusMessage);
-        })
-        .catch((e) => {
-          node.error(e);
-        });
+    server.emit(
+      'add_commissioning_controller',
+      node.id,
+      controller.commissioningController
+    );
+
+    controller.onStatusChange((status) => {
+      console.log('status', status);
+      const updateStatusMessage: StatusChangeMessage = {
+        type: DeviceType.OnOffLightDevice,
+        status,
+      };
+      node.emit('status_change', updateStatusMessage);
     });
   }
 

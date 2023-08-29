@@ -1,4 +1,5 @@
 import {
+  CommissioningController,
   CommissioningServer,
   MatterServer as MatterNodeServer,
 } from '@project-chip/matter-node.js';
@@ -43,14 +44,32 @@ export class MatterServer {
   }
 
   addCommissioningServer(commissioningServer: CommissioningServer) {
+    if (this.matterServer == null) {
+      throw new Error('Matter server not initialized');
+    }
+
     this.matterServer?.addCommissioningServer(commissioningServer);
   }
 
+  addCommissioningController(commissioningController: CommissioningController) {
+    if (this.matterServer == null) {
+      throw new Error('Matter server not initialized');
+    }
+
+    this.matterServer?.addCommissioningController(commissioningController);
+  }
+
   async start() {
+    if (this.matterServer == null) {
+      throw new Error('Matter server not initialized');
+    }
     await this.matterServer?.start();
   }
 
   async stop() {
+    if (this.matterServer == null) {
+      throw new Error('Matter server not initialized');
+    }
     await this.matterServer?.close();
   }
 }
