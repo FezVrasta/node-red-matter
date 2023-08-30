@@ -1,20 +1,11 @@
 import { CommissioningServer } from '@project-chip/matter-node.js';
-import {
-  OnOffLightDevice,
-  OnOffPluginUnitDevice,
-} from '@project-chip/matter-node.js/device';
-import {
-  commandExecutor,
-  logEndpoint,
-} from '@project-chip/matter-node.js/util';
-import { DeviceTypeId, VendorId } from '@project-chip/matter.js/datatype';
+import { Aggregator, DeviceTypes } from '@project-chip/matter-node.js/device';
+import { logEndpoint } from '@project-chip/matter-node.js/util';
+import { VendorId } from '@project-chip/matter.js/datatype';
 // @ts-ignore
 import pickPort from 'pick-port';
+import { MatterOnOffDevice } from './matter-device';
 
-export enum DeviceType {
-  OnOffPluginUnitDevice = 'OnOffPluginUnitDevice',
-  OnOffLightDevice = 'OnOffLightDevice',
-}
 interface CommissionMessage {
   qrCode: string;
   qrPairingCode: string;
@@ -23,13 +14,12 @@ interface CommissionMessage {
   commissioned: boolean;
 }
 
-export class MatterOnOffDevice {
+export class MatterAggregator {
   commissioningServer: CommissioningServer | undefined;
   uniqueId: string;
-  device: OnOffPluginUnitDevice | OnOffLightDevice | undefined;
+  device: Aggregator | undefined;
 
   port: number;
-  deviceType: DeviceType;
   deviceName = 'Matter test device';
   vendorName = 'Node RED Matter';
   passcode = 20202021;
@@ -40,28 +30,24 @@ export class MatterOnOffDevice {
   productId: number;
 
   constructor(
-    deviceType: DeviceType,
     port: number,
     uniqueId: string,
     discriminator: number,
     productId: number
   ) {
     this.port = Number(port);
-    this.deviceType = deviceType;
     this.uniqueId = uniqueId;
     this.discriminator = discriminator;
     this.productId = productId;
 
-    this.productName = this.deviceType.substring(0, 32);
+    this.productName = 'Aggregator';
   }
 
   async start({
-    aggregated,
-    onStatusChange,
+    devices,
   }: {
-    aggregated: boolean;
-    onStatusChange: (isOn: boolean | undefined) => void;
-  }): Promise<CommissioningServer | undefined> {
+    devices: MatterOnOffDevice[];
+  }): Promise<CommissioningServer> {
     const port: number =
       this.port === 0
         ? await pickPort({ type: 'udp', minPort: 5400, maxPort: 5540 })
@@ -79,32 +65,12 @@ export class MatterOnOffDevice {
      * like identify that can be implemented with the logic when these commands are called.
      */
 
-    switch (this.deviceType) {
-      case DeviceType.OnOffPluginUnitDevice:
-        this.device = new OnOffPluginUnitDevice();
-        break;
-      case DeviceType.OnOffLightDevice:
-        this.device = new OnOffLightDevice();
-        break;
-      default:
-        throw new Error('Unknown device type');
-    }
-
-    this.device.addOnOffListener((on) => {
-      commandExecutor(on ? 'on' : 'off')?.();
-      onStatusChange(on);
-    });
-
-    this.device.isOn().then((on) => {
-      onStatusChange(on);
-    });
-
-    if (aggregated) return;
+    this.device = new Aggregator();
 
     const commissioningServer = new CommissioningServer({
       port,
       deviceName: this.deviceName,
-      deviceType: DeviceTypeId(this.device.deviceType),
+      deviceType: DeviceTypes.AGGREGATOR.code,
       passcode: this.passcode,
       discriminator: this.discriminator,
       basicInformation: {
@@ -117,6 +83,23 @@ export class MatterOnOffDevice {
         serialNumber: `node-red-matter-${this.uniqueId}`,
       },
       delayedAnnouncement: false,
+    });
+
+    devices.forEach((device) => {
+      if (device.device == null) {
+        console.warn(
+          `Device ${device.uniqueId} not initialized so cannot be added`
+        );
+        return;
+      }
+
+      this.device?.addBridgedDevice(device.device, {
+        nodeLabel: device.deviceName,
+        productName: device.deviceName,
+        productLabel: device.deviceName,
+        serialNumber: `node-red-matter-${device.uniqueId}`,
+        reachable: true,
+      });
     });
 
     commissioningServer.addDevice(this.device);

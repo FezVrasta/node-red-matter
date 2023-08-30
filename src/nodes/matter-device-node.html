@@ -5,13 +5,18 @@
     color: '#a6bbcf',
     defaults: {
       name: { value: '' },
-      server: { type: 'matter-server', required: true },
+      devicecategory: { value: 'standalone', required: true },
+      server: {
+        type: 'matter-server',
+        required: false,
+      },
+      aggregator: {
+        type: 'matter-aggregator',
+        required: false,
+      },
       devicetype: {
         value: 'OnOffLightDevice',
         required: true,
-        validate: RED.validators.regex(
-          /^(OnOffLightDevice|OnOffPluginUnitDevice)$/
-        ),
       },
       port: {
         value: '0',
@@ -44,9 +49,40 @@
         discriminatorInput.value = Math.floor(Math.random() * 4096);
       }
 
+      const isAggregated =
+        $('#node-config-input-devicecategory').val() === 'aggregated';
+
+      console.log(isAggregated);
+      if (isAggregated) {
+        $('.device-category-button-group').removeClass('selected');
+        $('.device-category-button-group[data-value="aggregated"]').addClass(
+          'selected'
+        );
+        $('#node-config-pairing-area').hide();
+        $(`.device-category.standalone`).hide();
+      }
+
+      $('.device-category-button-group').on('click', function () {
+        const value = $(this).data('value');
+        $('.device-category-button-group').removeClass('selected');
+        $(this).addClass('selected');
+
+        $('.device-category').hide();
+        $(`.device-category.${value}`).show();
+
+        $('#node-config-input-devicecategory').val(value);
+        if (value === 'aggregated') {
+          $('#node-config-pairing-area').hide();
+        } else {
+          $('#node-config-pairing-area').show();
+        }
+      });
+
       $.getJSON(
-        `node-red-matter/pairingcode?device-id=${this.id}`,
+        `node-red-matter/device/pairingcode?device-id=${this.id}`,
         function (data) {
+          if (data.qrcode == null) return;
+
           document.getElementById(
             'node-config-input-devicetype'
           ).disabled = true;
@@ -83,28 +119,58 @@
     <input type="text" id="node-config-input-name" placeholder="Name" />
   </div>
 
-  <div class="form-row">
-    <label for="node-config-input-server">Matter Server</label>
-    <input type="text" id="node-config-input-server" />
-  </div>
+  <h3>Device Configuration</h3>
 
   <div class="form-row">
-    <label for="node-config-input-discriminator">Discriminator</label>
-    <input type="text" id="node-config-input-discriminator" />
+    <label>Device Category</label>
+    <input type="hidden" id="node-config-input-devicecategory" />
+    <span class="button-group">
+      <button
+        type="button"
+        class="red-ui-button toggle selected device-category-button-group"
+        data-value="standalone"
+      >
+        Standalone</button
+      ><button
+        type="button"
+        class="red-ui-button toggle device-category-button-group"
+        data-value="aggregated"
+      >
+        Aggregated
+      </button>
+    </span>
   </div>
 
-  <div class="form-row">
-    <label for="node-config-input-port">UDP Port</label>
-    <input
-      type="number"
-      id="node-config-input-port"
-      placeholder="UDP Port Number"
-    />
-  </div>
+  <div class="device-category standalone">
+    <div class="form-row">
+      <label for="node-config-input-server">Matter Server</label>
+      <input type="text" id="node-config-input-server" />
+    </div>
 
-  <div class="form-tips">
-    <strong>Tip:</strong> Leave this 0 to let the node pick a random free port
-    number.
+    <div class="form-row">
+      <label for="node-config-input-discriminator">Discriminator</label>
+      <input type="text" id="node-config-input-discriminator" />
+    </div>
+
+    <div class="form-row">
+      <label for="node-config-input-port">UDP Port</label>
+      <input
+        type="number"
+        id="node-config-input-port"
+        placeholder="UDP Port Number"
+      />
+    </div>
+
+    <div class="form-tips">
+      <strong>Tip:</strong> Leave this 0 to let the node pick a random free port
+      number.
+    </div>
+  </div>
+  <div class="device-category aggregated">
+    <div class="form-row">
+      <label for="node-config-input-server">Aggregator</label>
+      <input type="text" id="node-config-input-aggregator" />
+    </div>
   </div>
 
   <hr />
@@ -114,7 +180,7 @@
     <label for="node-config-input-devicetype">Device Type</label>
     <select id="node-config-input-devicetype">
       <option value="OnOffLightDevice">On/Off Light</option>
-      <option value="OnOffPluginUnitDevice">On/Off Plug</option>
+      <option value="OnOffPluginUnitDevice">On/Off Outlet</option>
     </select>
   </div>
 
@@ -127,33 +193,41 @@
     <strong>Tip:</strong> Device type and product ID can't be changed once the
     node is deployed.
   </div>
-  <hr />
 
-  <p id="node-config-notready">
-    To generate a pairing code, deploy this node first.
-  </p>
-  <details id="node-config-pairing" hidden open>
-    <summary>
+  <div id="node-config-pairing-area">
+    <hr />
+
+    <div id="node-config-notready">
       <h3 style="display: inline-block;">Pairing</h3>
-      <p id="node-config-already-paired" hidden>
-        This device is already paired, you won't be able to pair it with other
-        controllers until you decommission it from the paired controller first.
+      <p>To generate a pairing code, deploy this node first.</p>
+    </div>
+
+    <details id="node-config-pairing" hidden open>
+      <summary>
+        <h3 style="display: inline-block;">Pairing</h3>
+        <p id="node-config-already-paired" hidden>
+          This device is already paired, you won't be able to pair it with other
+          controllers until you decommission it from the paired controller
+          first.
+        </p>
+      </summary>
+      <p id="node-config-commission-instructions">
+        Scan the QR code in your Matter controller app (Apple Home, Google Home,
+        Alexa, etc...) to pair this device. We suggest to give this device the
+        same name as this node to make it easier to find it later.
       </p>
-    </summary>
-    <p id="node-config-commission-instructions">
-      Scan the QR code in your Matter controller app (Apple Home, Google Home,
-      Alexa, etc...) to pair this device. We suggest to give this device the
-      same name as this node to make it easier to find it later.
-    </p>
-    <div class="form-row">
-      <label for="node-config-input-pairing">QR Code</label>
-      <pre style="line-height: 1" id="node-config-input-pairing"></pre>
-    </div>
-    <div class="form-row">
-      <label for="node-config-input-manual-pairing">Manual Pairing Code</label>
-      <input type="text" id="node-config-input-manual-pairing" readonly />
-    </div>
-  </details>
+      <div class="form-row">
+        <label for="node-config-input-pairing">QR Code</label>
+        <pre style="line-height: 1" id="node-config-input-pairing"></pre>
+      </div>
+      <div class="form-row">
+        <label for="node-config-input-manual-pairing"
+          >Manual Pairing Code</label
+        >
+        <input type="text" id="node-config-input-manual-pairing" readonly />
+      </div>
+    </details>
+  </div>
 </script>
 
 <script type="text/html" data-help-name="matter-device">

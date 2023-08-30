@@ -1,0 +1,152 @@
+<script type="module">
+  const name = 'matter-aggregator';
+  RED.nodes.registerType(name, {
+    category: 'config',
+    color: '#a6bbcf',
+    defaults: {
+      name: { value: '' },
+      server: {
+        type: 'matter-server',
+        required: false,
+      },
+      port: {
+        value: '0',
+        required: true,
+        validate: RED.validators.number(),
+      },
+      discriminator: {
+        validate: (value) => {
+          if (value < 0 || value > 4095) {
+            return false;
+          }
+          return true;
+        },
+      },
+      productid: {
+        value: '0x8000',
+        validate: RED.validators.regex(/^0x[0-9a-fA-F]{4}$/),
+      },
+    },
+    icon: 'matter-logo.svg',
+    label: function () {
+      return this.name || 'Matter Aggregator';
+    },
+    paletteLabel: 'Matter Aggregator',
+    oneditprepare: function () {
+      const discriminatorInput = document.getElementById(
+        'node-config-input-discriminator'
+      );
+      if (discriminatorInput.value === '') {
+        discriminatorInput.value = Math.floor(Math.random() * 4096);
+      }
+
+      $.getJSON(
+        `node-red-matter/aggregator/pairingcode?device-id=${this.id}`,
+        function (data) {
+          document.getElementById(
+            'node-config-input-productid'
+          ).disabled = true;
+
+          document.getElementById('node-config-pairing').hidden = false;
+          document.getElementById('node-config-notready').hidden = true;
+          document.getElementById('node-config-input-pairing').innerText =
+            data.qrcode;
+
+          document.getElementById('node-config-input-manual-pairing').value =
+            data.manualPairingCode;
+
+          if (data.commissioned) {
+            document.getElementById(
+              'node-config-already-paired'
+            ).hidden = false;
+
+            document
+              .getElementById('node-config-pairing')
+              .removeAttribute('open');
+          }
+        }
+      );
+    },
+  });
+</script>
+
+<script type="text/html" data-template-name="matter-aggregator">
+  <div class="form-row">
+    <label for="node-config-input-name">Name</label>
+    <input type="text" id="node-config-input-name" placeholder="Name" />
+  </div>
+
+  <h3>Device Configuration</h3>
+
+  <div class="form-row">
+    <label for="node-config-input-server">Matter Server</label>
+    <input type="text" id="node-config-input-server" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-discriminator">Discriminator</label>
+    <input type="text" id="node-config-input-discriminator" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-port">UDP Port</label>
+    <input
+      type="number"
+      id="node-config-input-port"
+      placeholder="UDP Port Number"
+    />
+  </div>
+
+  <div class="form-tips">
+    <strong>Tip:</strong> Leave this 0 to let the node pick a random free port
+    number.
+  </div>
+
+  <hr />
+
+  <h3>Device Information</h3>
+
+  <div class="form-row">
+    <label for="node-config-input-discriminator">Product ID</label>
+    <input type="text" id="node-config-input-productid" />
+  </div>
+
+  <div class="form-tips">
+    <strong>Tip:</strong>Product ID can't be changed once the node is deployed.
+  </div>
+  <hr />
+
+  <p id="node-config-notready">
+    To generate a pairing code, deploy this node first.
+  </p>
+  <details id="node-config-pairing" hidden open>
+    <summary>
+      <h3 style="display: inline-block;">Pairing</h3>
+      <p id="node-config-already-paired" hidden>
+        This device is already paired, you won't be able to pair it with other
+        controllers until you decommission it from the paired controller first.
+      </p>
+    </summary>
+    <p id="node-config-commission-instructions">
+      Scan the QR code in your Matter controller app (Apple Home, Google Home,
+      Alexa, etc...) to pair this device. We suggest to give this device the
+      same name as this node to make it easier to find it later.
+    </p>
+    <div class="form-row">
+      <label for="node-config-input-pairing">QR Code</label>
+      <pre style="line-height: 1" id="node-config-input-pairing"></pre>
+    </div>
+    <div class="form-row">
+      <label for="node-config-input-manual-pairing">Manual Pairing Code</label>
+      <input type="text" id="node-config-input-manual-pairing" readonly />
+    </div>
+  </details>
+</script>
+
+<script type="text/html" data-help-name="matter-aggregator">
+  <p>
+    Generates a Matter aggregator device, which can be used to aggregate
+    multiple Matter devices into a single one, exposing a single device to
+    Matter controllers.
+  </p>
+</script>

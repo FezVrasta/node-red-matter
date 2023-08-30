@@ -14,7 +14,8 @@
       "matter-device-status": "lib/src/nodes/matter-device-status-node.js",
       "matter-device-control": "lib/src/nodes/matter-device-control-node.js",
       "matter-controller": "lib/src/nodes/matter-controller-node.js",
-      "matter-controller-status": "lib/src/nodes/matter-controller-status-node.js"
+      "matter-controller-status": "lib/src/nodes/matter-controller-status-node.js",
+      "matter-aggregator": "lib/src/nodes/matter-aggregator-node.js"
     }
   },
   "engines": {

@@ -2,19 +2,28 @@ import type { NodeAPI, Node, NodeDef } from 'node-red';
 import { DeviceType, MatterOnOffDevice } from '../modules/matter-device';
 import { MatterServerNode } from './matter-server-node';
 import { EndpointNumber } from '@project-chip/matter-node.js/datatype';
+import { MatterAggregatorNode } from './matter-aggregator-node';
+
+enum DeviceCategory {
+  standalone = 'standalone',
+  aggregated = 'aggregated',
+}
 
 export interface MatterDeviceNodeConfig extends NodeDef {
   server: string;
+  aggregator: string;
+  devicecategory: DeviceCategory;
   devicetype: DeviceType;
   port: number;
   discriminator: number;
   productid: string;
 }
 
-interface MatterDeviceNode extends Node {
+export interface MatterDeviceNode extends Node {
   qrcode: string;
   manualPairingCode: string;
   commissioned: boolean;
+  device: MatterOnOffDevice;
 }
 
 export type StatusChangeMessage = {
@@ -25,23 +34,25 @@ export type StatusChangeMessage = {
 };
 
 export default function (RED: NodeAPI) {
-  RED.httpAdmin.route('/node-red-matter/pairingcode').get(function (req, res) {
-    const deviceId = req.query['device-id' as never] as string;
-    const node = RED.nodes.getNode(deviceId) as MatterDeviceNode;
+  RED.httpAdmin
+    .route('/node-red-matter/device/pairingcode')
+    .get(function (req, res) {
+      const deviceId = req.query['device-id' as never] as string;
+      const node = RED.nodes.getNode(deviceId) as MatterDeviceNode;
 
-    if (node == null) {
-      res.status(404).send('Device not found');
-      return;
-    }
+      if (node == null) {
+        res.status(404).send('Device not found');
+        return;
+      }
 
-    const message = {
-      commissioned: node.commissioned,
-      qrcode: node.qrcode,
-      manualPairingCode: node.manualPairingCode,
-    };
+      const message = {
+        commissioned: node.commissioned,
+        qrcode: node.qrcode,
+        manualPairingCode: node.manualPairingCode,
+      };
 
-    res.json(message);
-  });
+      res.json(message);
+    });
 
   function MatterDeviceNode(
     this: MatterDeviceNode,
@@ -51,6 +62,9 @@ export default function (RED: NodeAPI) {
     RED.nodes.createNode(node, config);
 
     const server = RED.nodes.getNode(config.server) as MatterServerNode;
+    const aggregator = RED.nodes.getNode(
+      config.aggregator
+    ) as MatterAggregatorNode;
 
     const matterDevice = new MatterOnOffDevice(
       config.devicetype,
@@ -59,9 +73,11 @@ export default function (RED: NodeAPI) {
       Number(config.discriminator),
       Number(config.productid ?? 0x8000)
     );
+    node.device = matterDevice;
 
     matterDevice
       .start({
+        aggregated: config.devicecategory === DeviceCategory.aggregated,
         onStatusChange: (status) => {
           const message: StatusChangeMessage = {
             type: config.devicetype,
@@ -79,16 +95,22 @@ export default function (RED: NodeAPI) {
           node.warn(`Matter server ${config.server} not found`);
           return;
         }
-        server.emit('add_commissioning_server', node.id, commissioningServer);
+        if (commissioningServer != null) {
+          server.emit('add_commissioning_server', node.id, commissioningServer);
+        } else {
+          aggregator.emit('add_bridged_device', node.id, matterDevice);
+        }
 
         await server.serverPromise;
 
-        const message = await matterDevice.getPairingData();
+        if (commissioningServer != null) {
+          const message = await matterDevice.getPairingData();
 
-        // Store pairing code
-        node.qrcode = message.qrCode;
-        node.manualPairingCode = message.manualPairingCode;
-        node.commissioned = message.commissioned;
+          // Store pairing code
+          node.qrcode = message.qrCode;
+          node.manualPairingCode = message.manualPairingCode;
+          node.commissioned = message.commissioned;
+        }
 
         // Handle device updates
         if (matterDevice.device == null) {

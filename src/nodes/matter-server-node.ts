@@ -6,33 +6,12 @@ import {
   MatterServer as MatterNodeServer,
 } from '@project-chip/matter-node.js';
 import { Deferred } from 'ts-deferred';
+import { ObservableMap } from '../utils/ObservableMap';
 
 interface MatterServerNodeConfig extends NodeDef {}
 
 export interface MatterServerNode extends Node {
   serverPromise: Promise<MatterNodeServer>;
-}
-
-class ObservableMap<K, V> extends Map<K, V> {
-  private listeners: Set<(value: any) => void> = new Set();
-
-  override set(key: K, value: V): any {
-    super.set(key, value);
-
-    this.listeners.forEach((listener) => listener(this));
-  }
-
-  override get(key: K) {
-    return super.get(key);
-  }
-
-  addListener(listener: (value: any) => void) {
-    this.listeners.add(listener);
-  }
-
-  removeListener(listener: (value: any) => void) {
-    this.listeners.delete(listener);
-  }
 }
 
 export default function (RED: NodeAPI) {
@@ -45,7 +24,10 @@ export default function (RED: NodeAPI) {
 
     const devices = new ObservableMap<string, boolean>();
     RED.nodes.eachNode((n: NodeDef) => {
-      if ((n as any).server === node.id) {
+      if (
+        (n as any).server === node.id &&
+        (n as any).devicecategory !== 'aggregated'
+      ) {
         devices.set(n.id, false);
       }
     });
