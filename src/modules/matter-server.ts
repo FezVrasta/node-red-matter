@@ -51,11 +51,21 @@ export class MatterServer {
     this.matterServer?.addCommissioningServer(commissioningServer);
   }
 
+  private commissioningControllers: CommissioningController[] = [];
+  connectAllCommissioningControllers() {
+    return Promise.all(
+      this.commissioningControllers.map((commissioningController) => {
+        return commissioningController.connect();
+      })
+    );
+  }
+
   addCommissioningController(commissioningController: CommissioningController) {
     if (this.matterServer == null) {
       throw new Error('Matter server not initialized');
     }
 
+    this.commissioningControllers.push(commissioningController);
     this.matterServer?.addCommissioningController(commissioningController);
   }
 

@@ -46,17 +46,14 @@ export class MatterController {
   ) {
     const devices = this.commissioningController.getDevices();
 
-    console.log('devices', devices.length);
     if (devices[0]) {
       const onOff = devices[0].getClusterClient(OnOffCluster);
       if (onOff !== undefined) {
         onOff.getOnOffAttribute().then((value) => {
-          console.log('initial onOffStatus', value);
           onStatusChange(value);
         });
 
         onOff.addOnOffAttributeListener((value) => {
-          console.log('updated onOffStatus', value);
           onStatusChange(value);
         });
       }

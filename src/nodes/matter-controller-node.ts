@@ -40,13 +40,14 @@ export default function (RED: NodeAPI) {
       controller.commissioningController
     );
 
-    controller.addStatusChangeListener((status) => {
-      console.log('status', status);
-      const updateStatusMessage: StatusChangeMessage = {
-        type: DeviceType.OnOffLightDevice,
-        status,
-      };
-      node.emit('status_change', updateStatusMessage);
+    server.serverPromise.then(() => {
+      controller.addStatusChangeListener((status) => {
+        const updateStatusMessage: StatusChangeMessage = {
+          type: DeviceType.OnOffLightDevice,
+          status,
+        };
+        node.emit('status_change', updateStatusMessage);
+      });
     });
   }
 
