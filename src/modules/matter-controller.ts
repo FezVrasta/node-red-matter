@@ -3,6 +3,7 @@ import {
   GeneralCommissioning,
   OnOffCluster,
 } from '@project-chip/matter-node.js/cluster';
+import { EndpointNumber } from '@project-chip/matter-node.js/datatype';
 import { CommissioningOptions } from '@project-chip/matter-node.js/protocol';
 import { ManualPairingCodeCodec } from '@project-chip/matter-node.js/schema';
 import { logEndpoint } from '@project-chip/matter-node.js/util';
@@ -42,21 +43,56 @@ export class MatterController {
   }
 
   addStatusChangeListener(
-    onStatusChange: (status: boolean | undefined) => void
+    onStatusChange: (data: {
+      name: string;
+      status: boolean | undefined;
+      id: EndpointNumber | undefined;
+    }) => void
   ) {
     const devices = this.commissioningController.getDevices();
 
-    if (devices[0]) {
-      const onOff = devices[0].getClusterClient(OnOffCluster);
-      if (onOff !== undefined) {
-        onOff.getOnOffAttribute().then((value) => {
-          onStatusChange(value);
-        });
+    const device = devices[0];
 
-        onOff.addOnOffAttributeListener((value) => {
-          onStatusChange(value);
-        });
-      }
+    if (device == null) {
+      console.error('No devices found');
+      return;
+    }
+
+    // if the device has child endpoints, subscribe the on/off cluster on each of them
+    if (device.getChildEndpoints().length > 0) {
+      device.getChildEndpoints().forEach((endpoint) => {
+        const onOff = endpoint.getClusterClient(OnOffCluster);
+
+        if (onOff !== undefined) {
+          onOff.getOnOffAttribute().then((value) => {
+            onStatusChange({
+              name: endpoint.name,
+              status: value,
+              id: endpoint.id,
+            });
+          });
+
+          onOff.addOnOffAttributeListener((value) => {
+            onStatusChange({
+              name: endpoint.name,
+              status: value,
+              id: endpoint.id,
+            });
+          });
+        }
+      });
+    }
+
+    // Also subscribe the on/off cluster on the root endpoint if it exists
+    const onOff = device.getClusterClient(OnOffCluster);
+    if (onOff !== undefined) {
+      onOff.getOnOffAttribute().then((value) => {
+        onStatusChange({ name: device.name, status: value, id: device.id });
+      });
+
+      onOff.addOnOffAttributeListener((value) => {
+        onStatusChange({ name: device.name, status: value, id: device.id });
+      });
     }
   }
 }

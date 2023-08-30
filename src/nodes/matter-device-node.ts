@@ -1,6 +1,7 @@
 import type { NodeAPI, Node, NodeDef } from 'node-red';
 import { DeviceType, MatterOnOffDevice } from '../modules/matter-device';
 import { MatterServerNode } from './matter-server-node';
+import { EndpointNumber } from '@project-chip/matter-node.js/datatype';
 
 export interface MatterDeviceNodeConfig extends NodeDef {
   server: string;
@@ -18,6 +19,8 @@ interface MatterDeviceNode extends Node {
 
 export type StatusChangeMessage = {
   type: DeviceType;
+  name: string;
+  id: EndpointNumber | undefined;
   status: boolean | undefined;
 };
 
@@ -62,6 +65,8 @@ export default function (RED: NodeAPI) {
         onStatusChange: (status) => {
           const message: StatusChangeMessage = {
             type: config.devicetype,
+            name: matterDevice.deviceName,
+            id: matterDevice.device?.id,
             status,
           };
           node.emit('status_change', message);
@@ -96,6 +101,8 @@ export default function (RED: NodeAPI) {
             matterDevice.device.isOn().then((status) => {
               const updateStatusMessage: StatusChangeMessage = {
                 type: config.devicetype,
+                name: matterDevice.deviceName,
+                id: matterDevice.device?.id,
                 status,
               };
               node.emit('status_change', updateStatusMessage);

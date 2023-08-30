@@ -41,9 +41,11 @@ export default function (RED: NodeAPI) {
     );
 
     server.serverPromise.then(() => {
-      controller.addStatusChangeListener((status) => {
+      controller.addStatusChangeListener(({ name, status, id }) => {
         const updateStatusMessage: StatusChangeMessage = {
           type: DeviceType.OnOffLightDevice,
+          name,
+          id,
           status,
         };
         node.emit('status_change', updateStatusMessage);
