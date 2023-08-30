@@ -44,7 +44,6 @@ Currently, the Node-RED Matter plugin has the following limitations:
 
 - The plugin only supports the OnOffLightDevice (light) and OnOffPluginUnitDevice (outlet) device types,
   more device types will be added in the future.
-- Integration with "real" Matter devices is not supported yet, but will be added in the future.
 
 ## 💾 Backup
 
