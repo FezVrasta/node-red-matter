@@ -40,7 +40,7 @@ export default function (RED: NodeAPI) {
       controller.commissioningController
     );
 
-    controller.onStatusChange((status) => {
+    controller.addStatusChangeListener((status) => {
       console.log('status', status);
       const updateStatusMessage: StatusChangeMessage = {
         type: DeviceType.OnOffLightDevice,

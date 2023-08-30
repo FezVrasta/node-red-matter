@@ -41,7 +41,9 @@ export class MatterController {
     this.commissioningController = commissioningController;
   }
 
-  onStatusChange(onStatusChange: (status: boolean | undefined) => void) {
+  addStatusChangeListener(
+    onStatusChange: (status: boolean | undefined) => void
+  ) {
     const devices = this.commissioningController.getDevices();
 
     console.log('devices', devices.length);
