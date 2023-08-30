@@ -70,7 +70,11 @@ export default function (RED: NodeAPI) {
       node.log('Starting matter server');
       await matterServer.start();
       node.log('Connecting all commissioning controllers');
-      await matterServer.connectAllCommissioningControllers();
+      try {
+        await matterServer.connectAllCommissioningControllers();
+      } catch (e) {
+        node.error(e);
+      }
       node.log('Matter server started');
       serverStart.resolve(matterServer.matterServer);
     }
@@ -115,16 +119,25 @@ export default function (RED: NodeAPI) {
         await serverInit.promise;
 
         node.log(`Added commissioning controller for ${nodeId}`);
-        matterServer.addCommissioningController(commissioningController);
+        try {
+          matterServer.addCommissioningController(commissioningController);
+        } catch (e) {
+          node.error(e);
+        }
 
         devices.set(nodeId, true);
       }
     );
 
-    node.on('close', async (done: () => void) => {
-      node.log('Stopping matter server');
+    node.on('close', async (destroyed: boolean, done: () => void) => {
       await serverInit.promise;
-      await matterServer.stop();
+      if (destroyed === false) {
+        node.log('Stopping matter server');
+        await matterServer.stop();
+      } else {
+        node.log('Destroying matter server');
+        await matterServer.destroy();
+      }
       done();
     });
   }

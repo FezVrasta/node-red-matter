@@ -10,6 +10,7 @@ import {
 } from '@project-chip/matter-node.js/storage';
 // @ts-ignore
 import pickPort from 'pick-port';
+import fs from 'node:fs';
 
 const LOG_LEVEL = Number(process.env.NODE_RED_MATTER_LOG_LEVEL);
 switch (LOG_LEVEL) {
@@ -34,8 +35,10 @@ switch (LOG_LEVEL) {
 
 export class MatterServer {
   matterServer: MatterNodeServer | undefined;
+  storageLocation: string | undefined;
 
   async init({ storageLocation }: { storageLocation: string }) {
+    this.storageLocation = storageLocation;
     const storage = new StorageBackendDisk(storageLocation);
     const storageManager = new StorageManager(storage);
     await storageManager.initialize();
@@ -81,5 +84,17 @@ export class MatterServer {
       throw new Error('Matter server not initialized');
     }
     await this.matterServer?.close();
+  }
+
+  async destroy() {
+    if (this.matterServer == null) {
+      throw new Error('Matter server not initialized');
+    }
+    await this.matterServer?.close();
+    if (this.storageLocation == null) {
+      throw new Error('Storage location not initialized');
+    }
+
+    fs.rmdirSync(this.storageLocation, { recursive: true });
   }
 }
