@@ -25,9 +25,13 @@ export default function (RED: NodeAPI) {
 
     const relatedNodes = new ObservableMap<string, boolean>();
     RED.nodes.eachNode((n: NodeDef) => {
+      const isStandaloneDevice =
+        n.type === 'matter-device' &&
+        (n as any).devicecategory === DeviceCategory.standalone;
+      const isAggregator = n.type === 'matter-aggregator';
       if (
         (n as any).server === node.id &&
-        (n as any).devicecategory === DeviceCategory.standalone
+        (isStandaloneDevice || isAggregator)
       ) {
         relatedNodes.set(n.id, false);
       }
