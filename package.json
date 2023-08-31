@@ -1,6 +1,6 @@
 {
   "name": "@node-red-matter/node-red-matter",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
