@@ -3,6 +3,7 @@ import { DeviceType, MatterOnOffDevice } from '../modules/matter-device';
 import { MatterServerNode } from './matter-server-node';
 import { MatterAggregator } from '../modules/matter-aggregator';
 import { ObservableMap } from '../utils/ObservableMap';
+import { DeviceCategory } from './matter-device-node';
 
 export interface MatteraggregatorNodeConfig extends NodeDef {
   server: string;
@@ -57,13 +58,15 @@ export default function (RED: NodeAPI) {
       Number(config.productid ?? 0x8000)
     );
 
-    const devices: ObservableMap<string, boolean> = new ObservableMap();
+    const relatedNodes: ObservableMap<string, boolean> = new ObservableMap();
     RED.nodes.eachNode((n: NodeDef) => {
-      if ((n as any).aggregator === node.id) {
-        devices.set(n.id, false);
+      if (
+        (n as any).aggregator === node.id &&
+        (n as any).devicecategory === DeviceCategory.aggregated
+      ) {
+        relatedNodes.set(n.id, false);
       }
     });
-    console.log(devices);
 
     const matterDevices: MatterOnOffDevice[] = [];
     node.addListener(
@@ -71,11 +74,11 @@ export default function (RED: NodeAPI) {
       async (id: string, device: MatterOnOffDevice) => {
         node.log(`Adding device ${id} to aggregator`);
         matterDevices.push(device);
-        devices.set(id, true);
+        relatedNodes.set(id, true);
       }
     );
 
-    if (devices.size === 0) {
+    if (relatedNodes.size === 0) {
       startAggregator();
     }
 
@@ -86,18 +89,20 @@ export default function (RED: NodeAPI) {
       startAggregator();
     }, 8000);
 
-    devices.addListener(async (devices) => {
+    relatedNodes.addListener(async (relatedNodes) => {
       // Only start the server after all the devices have been added or failed to be added
-      if (Array.from(devices.values()).every((value) => value)) {
+      if (Array.from(relatedNodes.values()).every((value) => value)) {
         clearTimeout(timeout);
-        node.log(`All devices added (${devices.size}/${devices.size})`);
+        node.log(
+          `All related nodes added (${relatedNodes.size}/${relatedNodes.size})`
+        );
         startAggregator();
       } else {
-        const addedDevices = Array.from(devices.values()).filter(
+        const addedDevices = Array.from(relatedNodes.values()).filter(
           (value) => value === true
         ).length;
         node.log(
-          `Waiting for all bridged devices to be added (${addedDevices}/${devices.size})`
+          `Waiting for all bridged devices to be added (${addedDevices}/${relatedNodes.size})`
         );
       }
     });

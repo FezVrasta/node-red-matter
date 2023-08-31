@@ -4,7 +4,7 @@ import { MatterServerNode } from './matter-server-node';
 import { EndpointNumber } from '@project-chip/matter-node.js/datatype';
 import { MatterAggregatorNode } from './matter-aggregator-node';
 
-enum DeviceCategory {
+export enum DeviceCategory {
   standalone = 'standalone',
   aggregated = 'aggregated',
 }

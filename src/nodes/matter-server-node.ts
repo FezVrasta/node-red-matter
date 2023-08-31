@@ -7,6 +7,7 @@ import {
 } from '@project-chip/matter-node.js';
 import { Deferred } from 'ts-deferred';
 import { ObservableMap } from '../utils/ObservableMap';
+import { DeviceCategory } from './matter-device-node';
 
 interface MatterServerNodeConfig extends NodeDef {}
 
@@ -22,13 +23,13 @@ export default function (RED: NodeAPI) {
     const node = this;
     RED.nodes.createNode(node, config);
 
-    const devices = new ObservableMap<string, boolean>();
+    const relatedNodes = new ObservableMap<string, boolean>();
     RED.nodes.eachNode((n: NodeDef) => {
       if (
         (n as any).server === node.id &&
-        (n as any).devicecategory !== 'aggregated'
+        (n as any).devicecategory === DeviceCategory.standalone
       ) {
-        devices.set(n.id, false);
+        relatedNodes.set(n.id, false);
       }
     });
 
@@ -61,7 +62,7 @@ export default function (RED: NodeAPI) {
       serverStart.resolve(matterServer.matterServer);
     }
 
-    if (devices.size === 0) {
+    if (relatedNodes.size === 0) {
       serverInit.promise.then(() => {
         startServer();
       });
@@ -74,18 +75,20 @@ export default function (RED: NodeAPI) {
       startServer();
     }, 10000);
 
-    devices.addListener(async (devices) => {
+    relatedNodes.addListener(async (relatedNodes) => {
       // Only start the server after all the devices have been added or failed to be added
-      if (Array.from(devices.values()).every((value) => value)) {
+      if (Array.from(relatedNodes.values()).every((value) => value)) {
         clearTimeout(timeout);
-        node.log(`All devices added (${devices.size}/${devices.size})`);
+        node.log(
+          `All related nodes added (${relatedNodes.size}/${relatedNodes.size})`
+        );
         startServer();
       } else {
-        const addedDevices = Array.from(devices.values()).filter(
+        const addedDevices = Array.from(relatedNodes.values()).filter(
           (value) => value === true
         ).length;
         node.log(
-          `Waiting for all devices to be added (${addedDevices}/${devices.size}))`
+          `Waiting for all related nodes to be added (${addedDevices}/${relatedNodes.size}))`
         );
       }
     });
@@ -102,7 +105,7 @@ export default function (RED: NodeAPI) {
           node.error(e);
         }
 
-        devices.set(nodeId, true);
+        relatedNodes.set(nodeId, true);
       }
     );
 
@@ -121,7 +124,7 @@ export default function (RED: NodeAPI) {
           node.error(e);
         }
 
-        devices.set(nodeId, true);
+        relatedNodes.set(nodeId, true);
       }
     );
 
