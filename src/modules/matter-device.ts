@@ -44,13 +44,15 @@ export class MatterOnOffDevice {
     port: number,
     uniqueId: string,
     discriminator: number,
-    productId: number
+    productId: number,
+    deviceName: string
   ) {
     this.port = Number(port);
     this.deviceType = deviceType;
     this.uniqueId = uniqueId;
     this.discriminator = discriminator;
     this.productId = productId;
+    this.deviceName = deviceName;
 
     this.productName = this.deviceType.substring(0, 32);
   }

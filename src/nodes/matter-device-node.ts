@@ -71,7 +71,8 @@ export default function (RED: NodeAPI) {
       Number(config.port),
       node.id,
       Number(config.discriminator),
-      Number(config.productid ?? 0x8000)
+      Number(config.productid ?? 0x8000),
+      node.name ?? node.id
     );
     node.device = matterDevice;
 

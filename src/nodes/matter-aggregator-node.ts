@@ -55,7 +55,8 @@ export default function (RED: NodeAPI) {
       Number(config.port),
       node.id,
       Number(config.discriminator),
-      Number(config.productid ?? 0x8000)
+      Number(config.productid ?? 0x8000),
+      node.name ?? node.id
     );
 
     const relatedNodes: ObservableMap<string, boolean> = new ObservableMap();
@@ -78,10 +79,6 @@ export default function (RED: NodeAPI) {
       }
     );
 
-    if (relatedNodes.size === 0) {
-      startAggregator();
-    }
-
     const timeout = setTimeout(() => {
       node.warn(
         'Not all devices were added to the aggregator, starting anyway but in a potentially unstable state'
@@ -89,10 +86,13 @@ export default function (RED: NodeAPI) {
       startAggregator();
     }, 8000);
 
+    if (relatedNodes.size === 0) {
+      startAggregator();
+    }
+
     relatedNodes.addListener(async (relatedNodes) => {
       // Only start the server after all the devices have been added or failed to be added
       if (Array.from(relatedNodes.values()).every((value) => value)) {
-        clearTimeout(timeout);
         node.log(
           `All related nodes added (${relatedNodes.size}/${relatedNodes.size})`
         );
@@ -108,6 +108,7 @@ export default function (RED: NodeAPI) {
     });
 
     function startAggregator() {
+      clearTimeout(timeout);
       node.log('Starting matter aggregator');
       matterDevice
         .start({ devices: matterDevices })

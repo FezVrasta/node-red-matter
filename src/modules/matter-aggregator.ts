@@ -33,7 +33,8 @@ export class MatterAggregator {
     port: number,
     uniqueId: string,
     discriminator: number,
-    productId: number
+    productId: number,
+    deviceName: string
   ) {
     this.port = Number(port);
     this.uniqueId = uniqueId;
@@ -41,6 +42,7 @@ export class MatterAggregator {
     this.productId = productId;
 
     this.productName = 'Aggregator';
+    this.deviceName = deviceName;
   }
 
   async start({

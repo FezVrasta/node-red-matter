@@ -50,6 +50,8 @@ export default function (RED: NodeAPI) {
       });
 
     async function startServer() {
+      clearTimeout(timeout);
+
       node.log('Starting matter server');
       await matterServer.start();
       node.log('Connecting all commissioning controllers');
@@ -62,18 +64,18 @@ export default function (RED: NodeAPI) {
       serverStart.resolve(matterServer.matterServer);
     }
 
-    if (relatedNodes.size === 0) {
-      serverInit.promise.then(() => {
-        startServer();
-      });
-    }
-
     const timeout = setTimeout(() => {
       node.warn(
         'Not all devices were added to the server, starting anyway but in a potentially unstable state'
       );
       startServer();
     }, 10000);
+
+    if (relatedNodes.size === 0) {
+      serverInit.promise.then(() => {
+        startServer();
+      });
+    }
 
     relatedNodes.addListener(async (relatedNodes) => {
       // Only start the server after all the devices have been added or failed to be added
