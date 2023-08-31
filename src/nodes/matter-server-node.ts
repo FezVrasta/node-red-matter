@@ -67,12 +67,26 @@ export default function (RED: NodeAPI) {
       });
     }
 
+    const timeout = setTimeout(() => {
+      node.warn(
+        'Not all devices were added to the server, starting anyway but in a potentially unstable state'
+      );
+      startServer();
+    }, 10000);
+
     devices.addListener(async (devices) => {
       // Only start the server after all the devices have been added or failed to be added
       if (Array.from(devices.values()).every((value) => value)) {
+        clearTimeout(timeout);
+        node.log(`All devices added (${devices.size}/${devices.size})`);
         startServer();
       } else {
-        node.log('Waiting for all devices to be added');
+        const addedDevices = Array.from(devices.values()).filter(
+          (value) => value === true
+        ).length;
+        node.log(
+          `Waiting for all devices to be added (${addedDevices}/${devices.size}))`
+        );
       }
     });
 

@@ -91,17 +91,27 @@ export default function (RED: NodeAPI) {
       .then(async (commissioningServer) => {
         // Register device to Matter server
 
-        if (server == null) {
-          node.warn(`Matter server ${config.server} not found`);
+        if (
+          config.devicecategory === DeviceCategory.standalone &&
+          server == null
+        ) {
+          node.error(`Matter server ${config.server} not found`);
+          return;
+        } else if (
+          config.devicecategory === DeviceCategory.aggregated &&
+          aggregator == null
+        ) {
+          node.error(`Matter aggregator ${config.aggregator} not found`);
           return;
         }
+
         if (commissioningServer != null) {
+          await server.serverPromise;
           server.emit('add_commissioning_server', node.id, commissioningServer);
         } else {
           aggregator.emit('add_bridged_device', node.id, matterDevice);
+          await aggregator.server.serverPromise;
         }
-
-        await server.serverPromise;
 
         if (commissioningServer != null) {
           const message = await matterDevice.getPairingData();

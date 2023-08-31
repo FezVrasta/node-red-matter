@@ -16,6 +16,7 @@ export interface MatterAggregatorNode extends Node {
   qrcode: string;
   manualPairingCode: string;
   commissioned: boolean;
+  server: MatterServerNode;
 }
 
 export default function (RED: NodeAPI) {
@@ -47,6 +48,7 @@ export default function (RED: NodeAPI) {
     RED.nodes.createNode(node, config);
 
     const server = RED.nodes.getNode(config.server) as MatterServerNode;
+    node.server = server;
 
     const matterDevice = new MatterAggregator(
       Number(config.port),
@@ -77,12 +79,26 @@ export default function (RED: NodeAPI) {
       startAggregator();
     }
 
+    const timeout = setTimeout(() => {
+      node.warn(
+        'Not all devices were added to the aggregator, starting anyway but in a potentially unstable state'
+      );
+      startAggregator();
+    }, 8000);
+
     devices.addListener(async (devices) => {
       // Only start the server after all the devices have been added or failed to be added
       if (Array.from(devices.values()).every((value) => value)) {
+        clearTimeout(timeout);
+        node.log(`All devices added (${devices.size}/${devices.size})`);
         startAggregator();
       } else {
-        node.log('Waiting for all bridged devices to be added');
+        const addedDevices = Array.from(devices.values()).filter(
+          (value) => value === true
+        ).length;
+        node.log(
+          `Waiting for all bridged devices to be added (${addedDevices}/${devices.size})`
+        );
       }
     });
 
