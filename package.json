@@ -25,6 +25,7 @@
     "node-red",
     "matter"
   ],
+  "homepage": "https://github.com/FezVrasta/node-red-matter",
   "bugs": {
     "url": "https://github.com/FezVrasta/node-red-matter/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc"
   },
