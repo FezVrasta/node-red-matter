@@ -38,7 +38,7 @@ export default function (RED: NodeAPI) {
     .route('/node-red-matter/device/pairingcode')
     .get(function (req, res) {
       const deviceId = req.query['device-id' as never] as string;
-      const node = RED.nodes.getNode(deviceId) as MatterDeviceNode;
+      const node = RED.nodes.getNode(deviceId) as MatterDeviceNode | undefined;
 
       if (node == null) {
         res.status(404).send('Device not found');
@@ -61,10 +61,12 @@ export default function (RED: NodeAPI) {
     const node = this;
     RED.nodes.createNode(node, config);
 
-    const server = RED.nodes.getNode(config.server) as MatterServerNode;
-    const aggregator = RED.nodes.getNode(
-      config.aggregator
-    ) as MatterAggregatorNode;
+    const server = RED.nodes.getNode(config.server) as
+      | MatterServerNode
+      | undefined;
+    const aggregator = RED.nodes.getNode(config.aggregator) as
+      | MatterAggregatorNode
+      | undefined;
 
     if (config.devicecategory === DeviceCategory.standalone && server == null) {
       node.error(`Matter server ${config.server} not found`);
@@ -101,7 +103,10 @@ export default function (RED: NodeAPI) {
         },
       })
       .then(async (commissioningServer) => {
-        if (config.devicecategory === DeviceCategory.standalone) {
+        if (
+          config.devicecategory === DeviceCategory.standalone &&
+          server != null
+        ) {
           server.emit('add_commissioning_server', node.id, commissioningServer);
           await server.serverPromise;
 
@@ -111,9 +116,12 @@ export default function (RED: NodeAPI) {
           node.qrcode = message.qrCode;
           node.manualPairingCode = message.manualPairingCode;
           node.commissioned = message.commissioned;
-        } else {
+        } else if (aggregator != null) {
           aggregator.emit('add_bridged_device', node.id, matterDevice);
           await aggregator.server.serverPromise;
+        } else {
+          node.error('No server or aggregator found');
+          return;
         }
 
         // Handle device updates

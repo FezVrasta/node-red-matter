@@ -1,5 +1,5 @@
 import type { NodeAPI, Node, NodeDef } from 'node-red';
-import { StatusChangeMessage } from './matter-device-node';
+import { MatterDeviceNode, StatusChangeMessage } from './matter-device-node';
 
 interface MatterDeviceNodeConfig extends NodeDef {
   device: string;
@@ -17,7 +17,14 @@ export default function (RED: NodeAPI) {
     const node = this;
     RED.nodes.createNode(node, config);
 
-    const matterDeviceNode = RED.nodes.getNode(config.device);
+    const matterDeviceNode = RED.nodes.getNode(config.device) as
+      | MatterDeviceNode
+      | undefined;
+
+    if (matterDeviceNode == null) {
+      node.error(`Associated matter-device node (${config.device}) not found`);
+      return;
+    }
 
     node.on('input', (msg) => {
       const payload = msg.payload as StatusChangeMessage['status'];

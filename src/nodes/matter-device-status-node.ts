@@ -1,5 +1,5 @@
 import type { NodeAPI, Node, NodeDef } from 'node-red';
-import { StatusChangeMessage } from './matter-device-node';
+import { MatterDeviceNode, StatusChangeMessage } from './matter-device-node';
 import { DeviceType } from '../modules/matter-device';
 
 interface MatterDeviceNodeConfig extends NodeDef {
@@ -18,7 +18,9 @@ export function MatterDeviceStatusNode(RED: NodeAPI) {
     const node = this;
     RED.nodes.createNode(node, config);
 
-    const matterDeviceNode = RED.nodes.getNode(config.device);
+    const matterDeviceNode = RED.nodes.getNode(config.device) as
+      | MatterDeviceNode
+      | undefined;
 
     node.status({
       fill: 'grey',

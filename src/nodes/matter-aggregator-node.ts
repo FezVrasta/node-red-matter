@@ -27,7 +27,9 @@ export default function (RED: NodeAPI) {
     .route('/node-red-matter/aggregator/pairingcode')
     .get(function (req, res) {
       const deviceId = req.query['device-id' as never] as string;
-      const node = RED.nodes.getNode(deviceId) as MatterAggregatorNode;
+      const node = RED.nodes.getNode(deviceId) as
+        | MatterAggregatorNode
+        | undefined;
 
       if (node == null) {
         res.status(404).send('Device not found');
@@ -47,7 +49,9 @@ export default function (RED: NodeAPI) {
     .route('/node-red-matter/aggregator/decommission')
     .post(function (req, res) {
       const deviceId = req.query['device-id' as never] as string;
-      const node = RED.nodes.getNode(deviceId) as MatterAggregatorNode;
+      const node = RED.nodes.getNode(deviceId) as
+        | MatterAggregatorNode
+        | undefined;
 
       if (node == null) {
         res.status(404).send('Device not found');
@@ -73,7 +77,15 @@ export default function (RED: NodeAPI) {
     const node = this;
     RED.nodes.createNode(node, config);
 
-    const server = RED.nodes.getNode(config.server) as MatterServerNode;
+    const server = RED.nodes.getNode(config.server) as
+      | MatterServerNode
+      | undefined;
+
+    if (server == null) {
+      node.error(`Matter server ${config.server} not found`);
+      return;
+    }
+
     node.server = server;
 
     const matterDevice = new MatterAggregator(

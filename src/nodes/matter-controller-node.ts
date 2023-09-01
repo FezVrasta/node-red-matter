@@ -21,7 +21,9 @@ export default function (RED: NodeAPI) {
     const node = this;
     RED.nodes.createNode(node, config);
 
-    const server = RED.nodes.getNode(config.server) as MatterServerNode;
+    const server = RED.nodes.getNode(config.server) as
+      | MatterServerNode
+      | undefined;
 
     if (server == null) {
       node.error(`Associated matter-server node (${config.server}) not found`);

@@ -67,8 +67,8 @@ export default function (RED: NodeAPI) {
       );
       Array.from(relatedNodes.entries()).forEach(([nodeId, added]) => {
         if (added === false) {
-          const relatedNode = RED.nodes.getNode(nodeId);
-          relatedNode.error(
+          const relatedNode = RED.nodes.getNode(nodeId) as Node | undefined;
+          relatedNode?.error(
             `Node was not added to the Matter server, it won't be reachable!`
           );
         }
