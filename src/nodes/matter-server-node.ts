@@ -39,19 +39,12 @@ export default function (RED: NodeAPI) {
 
     const nodeRedFolderPath = RED.settings.userDir;
 
-    const serverInit = new Deferred<void>();
-
     const serverStart = new Deferred<MatterNodeServer>();
     node.serverPromise = serverStart.promise;
 
-    const matterServer = new MatterServer();
-    matterServer
-      .init({
-        storageLocation: `${nodeRedFolderPath}/node-red-matter/matter-servers/${node.id}`,
-      })
-      .then(() => {
-        serverInit.resolve();
-      });
+    const matterServer = new MatterServer({
+      storageLocation: `${nodeRedFolderPath}/node-red-matter/matter-servers/${node.id}`,
+    });
 
     async function startServer() {
       clearTimeout(timeout);
@@ -72,13 +65,19 @@ export default function (RED: NodeAPI) {
       node.warn(
         'Not all devices were added to the server, starting anyway but in a potentially unstable state'
       );
+      Array.from(relatedNodes.entries()).forEach(([nodeId, added]) => {
+        if (added === false) {
+          const relatedNode = RED.nodes.getNode(nodeId);
+          relatedNode.error(
+            `Node was not added to the Matter server, it won't be reachable!`
+          );
+        }
+      });
       startServer();
     }, 10000);
 
     if (relatedNodes.size === 0) {
-      serverInit.promise.then(() => {
-        startServer();
-      });
+      startServer();
     }
 
     relatedNodes.addListener(async (relatedNodes) => {
@@ -102,8 +101,6 @@ export default function (RED: NodeAPI) {
     node.addListener(
       'add_commissioning_server',
       async (nodeId: string, commissioningServer: CommissioningServer) => {
-        await serverInit.promise;
-
         try {
           matterServer.addCommissioningServer(commissioningServer);
           node.log(`Added commissioning server for ${nodeId}`);
@@ -121,8 +118,6 @@ export default function (RED: NodeAPI) {
         nodeId: string,
         commissioningController: CommissioningController
       ) => {
-        await serverInit.promise;
-
         node.log(`Added commissioning controller for ${nodeId}`);
         try {
           matterServer.addCommissioningController(commissioningController);
@@ -135,7 +130,6 @@ export default function (RED: NodeAPI) {
     );
 
     node.on('close', async (destroyed: boolean, done: () => void) => {
-      await serverInit.promise;
       if (destroyed === false) {
         node.log('Stopping matter server');
         await matterServer.stop();

@@ -66,6 +66,17 @@ export default function (RED: NodeAPI) {
       config.aggregator
     ) as MatterAggregatorNode;
 
+    if (config.devicecategory === DeviceCategory.standalone && server == null) {
+      node.error(`Matter server ${config.server} not found`);
+      return;
+    } else if (
+      config.devicecategory === DeviceCategory.aggregated &&
+      aggregator == null
+    ) {
+      node.error(`Matter aggregator ${config.aggregator} not found`);
+      return;
+    }
+
     const matterDevice = new MatterOnOffDevice(
       config.devicetype,
       Number(config.port),
@@ -90,37 +101,19 @@ export default function (RED: NodeAPI) {
         },
       })
       .then(async (commissioningServer) => {
-        // Register device to Matter server
-
-        if (
-          config.devicecategory === DeviceCategory.standalone &&
-          server == null
-        ) {
-          node.error(`Matter server ${config.server} not found`);
-          return;
-        } else if (
-          config.devicecategory === DeviceCategory.aggregated &&
-          aggregator == null
-        ) {
-          node.error(`Matter aggregator ${config.aggregator} not found`);
-          return;
-        }
-
-        if (commissioningServer != null) {
-          await server.serverPromise;
+        if (config.devicecategory === DeviceCategory.standalone) {
           server.emit('add_commissioning_server', node.id, commissioningServer);
-        } else {
-          aggregator.emit('add_bridged_device', node.id, matterDevice);
-          await aggregator.server.serverPromise;
-        }
+          await server.serverPromise;
 
-        if (commissioningServer != null) {
           const message = await matterDevice.getPairingData();
 
           // Store pairing code
           node.qrcode = message.qrCode;
           node.manualPairingCode = message.manualPairingCode;
           node.commissioned = message.commissioned;
+        } else {
+          aggregator.emit('add_bridged_device', node.id, matterDevice);
+          await aggregator.server.serverPromise;
         }
 
         // Handle device updates

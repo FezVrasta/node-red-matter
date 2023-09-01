@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@project-chip/matter-node.js": "^0.5.0",
+    "fast-glob": "^3.3.1",
     "pick-port": "^1.0.1",
     "ts-deferred": "^1.0.4"
   },

@@ -34,14 +34,16 @@ switch (LOG_LEVEL) {
 }
 
 export class MatterServer {
-  matterServer: MatterNodeServer | undefined;
+  matterServer: MatterNodeServer;
   storageLocation: string | undefined;
 
-  async init({ storageLocation }: { storageLocation: string }) {
+  constructor({ storageLocation }: { storageLocation: string }) {
     this.storageLocation = storageLocation;
     const storage = new StorageBackendDisk(storageLocation);
     const storageManager = new StorageManager(storage);
-    await storageManager.initialize();
+
+    // This is async but the StorageBackendDisk is not actually making use of async operations
+    storageManager.initialize();
 
     this.matterServer = new MatterNodeServer(storageManager);
   }

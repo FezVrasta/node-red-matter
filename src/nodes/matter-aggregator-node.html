@@ -33,6 +33,7 @@
     },
     paletteLabel: 'Matter Aggregator',
     oneditprepare: function () {
+      const node = this;
       const discriminatorInput = document.getElementById(
         'node-config-input-discriminator'
       );
@@ -40,32 +41,48 @@
         discriminatorInput.value = Math.floor(Math.random() * 4096);
       }
 
-      $.getJSON(
-        `node-red-matter/aggregator/pairingcode?device-id=${this.id}`,
-        function (data) {
-          document.getElementById(
-            'node-config-input-productid'
-          ).disabled = true;
+      retrievePairingInformation();
 
-          document.getElementById('node-config-pairing').hidden = false;
-          document.getElementById('node-config-notready').hidden = true;
-          document.getElementById('node-config-input-pairing').innerText =
-            data.qrcode;
-
-          document.getElementById('node-config-input-manual-pairing').value =
-            data.manualPairingCode;
-
-          if (data.commissioned) {
-            document.getElementById(
-              'node-config-already-paired'
-            ).hidden = false;
-
-            document
-              .getElementById('node-config-pairing')
-              .removeAttribute('open');
+      $('#node-config-decommission-button').click(function () {
+        $.post(
+          `node-red-matter/aggregator/decommission?device-id=${node.id}`,
+          function (data) {
+            retrievePairingInformation();
           }
-        }
-      );
+        );
+      });
+
+      function retrievePairingInformation() {
+        $.getJSON(
+          `node-red-matter/aggregator/pairingcode?device-id=${node.id}`,
+          function (data) {
+            const pairingDataElement = $('#node-config-pairing-status');
+            if (data.qrcode == null) {
+              pairingDataElement.text(
+                'Unable to retrieve pairing data. Make sure you deployed the node first, and that the associated Matter server is running.'
+              );
+              return;
+            } else if (data.commissioned) {
+              pairingDataElement.text(
+                "This device is already paired, you won't be able to pair it with other controllers until you decommission it from the paired controller first."
+              );
+            } else {
+              $('#node-config-pairing-data').show();
+              pairingDataElement.remove();
+            }
+
+            document.getElementById(
+              'node-config-input-productid'
+            ).disabled = true;
+
+            document.getElementById('node-config-input-pairing').innerText =
+              data.qrcode;
+
+            document.getElementById('node-config-input-manual-pairing').value =
+              data.manualPairingCode;
+          }
+        );
+      }
     },
   });
 </script>
@@ -114,33 +131,46 @@
   <div class="form-tips">
     <strong>Tip:</strong>Product ID can't be changed once the node is deployed.
   </div>
+
+  <div id="node-config-pairing-area">
+    <hr />
+
+    <h3>Pairing</h3>
+
+    <p id="node-config-pairing-status">Retrieving pairing information...</p>
+
+    <div id="node-config-pairing-data" hidden>
+      <p id="node-config-commission-instructions">
+        Scan the QR code in your Matter controller app (Apple Home, Google Home,
+        Alexa, etc...) to pair this device. We suggest to give this device the
+        same name as this node to make it easier to find it later.
+      </p>
+      <div class="form-row">
+        <label for="node-config-input-pairing">QR Code</label>
+        <pre style="line-height: 1" id="node-config-input-pairing"></pre>
+      </div>
+      <div class="form-row">
+        <label for="node-config-input-manual-pairing"
+          >Manual Pairing Code</label
+        >
+        <input type="text" id="node-config-input-manual-pairing" readonly />
+      </div>
+    </div>
+  </div>
+
   <hr />
 
-  <p id="node-config-notready">
-    To generate a pairing code, deploy this node first.
-  </p>
-  <details id="node-config-pairing" hidden open>
-    <summary>
-      <h3 style="display: inline-block;">Pairing</h3>
-      <p id="node-config-already-paired" hidden>
-        This device is already paired, you won't be able to pair it with other
-        controllers until you decommission it from the paired controller first.
-      </p>
-    </summary>
-    <p id="node-config-commission-instructions">
-      Scan the QR code in your Matter controller app (Apple Home, Google Home,
-      Alexa, etc...) to pair this device. We suggest to give this device the
-      same name as this node to make it easier to find it later.
+  <div hidden>
+    <h3>Decomission</h3>
+
+    <p>
+      If the device was previously paired to a Matter controller and then
+      removed, but the device here still results commissioned, you can force it
+      to be decomissioned by pressing the button below.
     </p>
-    <div class="form-row">
-      <label for="node-config-input-pairing">QR Code</label>
-      <pre style="line-height: 1" id="node-config-input-pairing"></pre>
-    </div>
-    <div class="form-row">
-      <label for="node-config-input-manual-pairing">Manual Pairing Code</label>
-      <input type="text" id="node-config-input-manual-pairing" readonly />
-    </div>
-  </details>
+
+    <button id="node-config-decommission-button">Decommission</button>
+  </div>
 </script>
 
 <script type="text/html" data-help-name="matter-aggregator">

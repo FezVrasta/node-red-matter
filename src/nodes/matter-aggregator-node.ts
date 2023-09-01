@@ -4,6 +4,8 @@ import { MatterServerNode } from './matter-server-node';
 import { MatterAggregator } from '../modules/matter-aggregator';
 import { ObservableMap } from '../utils/ObservableMap';
 import { DeviceCategory } from './matter-device-node';
+import { rmSync } from 'node:fs';
+import { globSync } from 'fast-glob';
 
 export interface MatteraggregatorNodeConfig extends NodeDef {
   server: string;
@@ -14,8 +16,8 @@ export interface MatteraggregatorNodeConfig extends NodeDef {
 }
 
 export interface MatterAggregatorNode extends Node {
-  qrcode: string;
-  manualPairingCode: string;
+  qrcode: string | undefined;
+  manualPairingCode: string | undefined;
   commissioned: boolean;
   server: MatterServerNode;
 }
@@ -41,6 +43,29 @@ export default function (RED: NodeAPI) {
       res.json(message);
     });
 
+  RED.httpAdmin
+    .route('/node-red-matter/aggregator/decommission')
+    .post(function (req, res) {
+      const deviceId = req.query['device-id' as never] as string;
+      const node = RED.nodes.getNode(deviceId) as MatterAggregatorNode;
+
+      if (node == null) {
+        res.status(404).send('Device not found');
+        return;
+      }
+
+      const files = globSync(
+        `${RED.settings.userDir}/node-red-matter/matter-servers/${node.server.id}/*${node.id}*`
+      );
+
+      files.forEach((file) => {
+        rmSync(file, { recursive: true });
+      });
+
+      node.commissioned = false;
+
+      res.sendStatus(200);
+    });
   function MatterAggregatorNode(
     this: MatterAggregatorNode,
     config: MatteraggregatorNodeConfig
