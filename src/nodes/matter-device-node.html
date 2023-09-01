@@ -9,10 +9,39 @@
       server: {
         type: 'matter-server',
         required: false,
+        validate: (value) => {
+          const deviceCategory = $(
+            '.device-category-button-group.selected'
+          ).data('value');
+
+          if (
+            (value === '_ADD_' || value === '') &&
+            deviceCategory === 'standalone'
+          ) {
+            return false;
+          }
+
+          return true;
+        },
       },
       aggregator: {
         type: 'matter-aggregator',
         required: false,
+
+        validate: (value) => {
+          const deviceCategory = $(
+            '.device-category-button-group.selected'
+          ).data('value');
+
+          if (
+            (value === '_ADD_' || value === '') &&
+            deviceCategory === 'aggregated'
+          ) {
+            return false;
+          }
+
+          return true;
+        },
       },
       devicetype: {
         value: 'OnOffLightDevice',
@@ -53,7 +82,6 @@
       const isAggregated =
         $('#node-config-input-devicecategory').val() === 'aggregated';
 
-      console.log(isAggregated);
       if (isAggregated) {
         $('.device-category-button-group').removeClass('selected');
         $('.device-category-button-group[data-value="aggregated"]').addClass(
@@ -61,6 +89,7 @@
         );
         $('#node-config-pairing-area').hide();
         $(`.device-category.standalone`).hide();
+        $(`.device-category.aggregated`).show();
       }
 
       $('.device-category-button-group').on('click', function () {
