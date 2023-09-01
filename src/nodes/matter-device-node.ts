@@ -145,6 +145,9 @@ export default function (RED: NodeAPI) {
           default:
             node.warn(`Unknown device type ${config.devicetype}`);
         }
+      })
+      .catch((error) => {
+        node.error(error);
       });
 
     // Receive status change requests from matter-device-control nodes

@@ -167,6 +167,9 @@ export default function (RED: NodeAPI) {
           node.qrcode = message.qrCode;
           node.manualPairingCode = message.manualPairingCode;
           node.commissioned = message.commissioned;
+        })
+        .catch((e) => {
+          node.error(e);
         });
     }
   }
