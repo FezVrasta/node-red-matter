@@ -51,12 +51,6 @@ export default function (RED: NodeAPI) {
 
       node.log('Starting matter server');
       await matterServer.start();
-      node.log('Connecting all commissioning controllers');
-      try {
-        await matterServer.connectAllCommissioningControllers();
-      } catch (e) {
-        node.error(e);
-      }
       node.log('Matter server started');
       serverStart.resolve(matterServer.matterServer);
     }

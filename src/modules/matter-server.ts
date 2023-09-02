@@ -35,7 +35,7 @@ switch (LOG_LEVEL) {
 
 export class MatterServer {
   matterServer: MatterNodeServer;
-  storageLocation: string | undefined;
+  storageLocation: string;
 
   constructor({ storageLocation }: { storageLocation: string }) {
     this.storageLocation = storageLocation;
@@ -49,15 +49,11 @@ export class MatterServer {
   }
 
   addCommissioningServer(commissioningServer: CommissioningServer) {
-    if (this.matterServer == null) {
-      throw new Error('Matter server not initialized');
-    }
-
-    this.matterServer?.addCommissioningServer(commissioningServer);
+    this.matterServer.addCommissioningServer(commissioningServer);
   }
 
   private commissioningControllers: CommissioningController[] = [];
-  connectAllCommissioningControllers() {
+  private connectAllCommissioningControllers() {
     return Promise.all(
       this.commissioningControllers.map((commissioningController) => {
         return commissioningController.connect();
@@ -66,36 +62,21 @@ export class MatterServer {
   }
 
   addCommissioningController(commissioningController: CommissioningController) {
-    if (this.matterServer == null) {
-      throw new Error('Matter server not initialized');
-    }
-
     this.commissioningControllers.push(commissioningController);
-    this.matterServer?.addCommissioningController(commissioningController);
+    this.matterServer.addCommissioningController(commissioningController);
   }
 
   async start() {
-    if (this.matterServer == null) {
-      throw new Error('Matter server not initialized');
-    }
-    await this.matterServer?.start();
+    await this.matterServer.start();
+    await this.connectAllCommissioningControllers();
   }
 
   async stop() {
-    if (this.matterServer == null) {
-      throw new Error('Matter server not initialized');
-    }
-    await this.matterServer?.close();
+    await this.matterServer.close();
   }
 
   async destroy() {
-    if (this.matterServer == null) {
-      throw new Error('Matter server not initialized');
-    }
-    await this.matterServer?.close();
-    if (this.storageLocation == null) {
-      throw new Error('Storage location not initialized');
-    }
+    await this.matterServer.close();
 
     fs.rmdirSync(this.storageLocation, { recursive: true });
   }
