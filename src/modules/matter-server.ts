@@ -11,6 +11,7 @@ import {
 // @ts-ignore
 import pickPort from 'pick-port';
 import fs from 'node:fs';
+import { logEndpoint } from '@project-chip/matter-node.js/util';
 
 const LOG_LEVEL = Number(process.env.NODE_RED_MATTER_LOG_LEVEL);
 switch (LOG_LEVEL) {
@@ -48,8 +49,17 @@ export class MatterServer {
     this.matterServer = new MatterNodeServer(storageManager);
   }
 
+  private commissioningServers: CommissioningServer[] = [];
   addCommissioningServer(commissioningServer: CommissioningServer) {
     this.matterServer.addCommissioningServer(commissioningServer);
+  }
+
+  private logAllEndpoints() {
+    [...this.commissioningServers, ...this.commissioningControllers].forEach(
+      (item) => {
+        logEndpoint(item.getRootEndpoint());
+      }
+    );
   }
 
   private commissioningControllers: CommissioningController[] = [];
@@ -69,6 +79,7 @@ export class MatterServer {
   async start() {
     await this.matterServer.start();
     await this.connectAllCommissioningControllers();
+    this.logAllEndpoints();
   }
 
   async stop() {

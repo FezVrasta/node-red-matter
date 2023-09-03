@@ -107,7 +107,6 @@ export class MatterAggregator {
     commissioningServer.addDevice(this.device);
     this.commissioningServer = commissioningServer;
 
-    logEndpoint(commissioningServer.getRootEndpoint());
     return commissioningServer;
   }
 

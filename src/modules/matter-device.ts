@@ -3,10 +3,7 @@ import {
   OnOffLightDevice,
   OnOffPluginUnitDevice,
 } from '@project-chip/matter-node.js/device';
-import {
-  commandExecutor,
-  logEndpoint,
-} from '@project-chip/matter-node.js/util';
+import { commandExecutor } from '@project-chip/matter-node.js/util';
 import { DeviceTypeId, VendorId } from '@project-chip/matter.js/datatype';
 // @ts-ignore
 import pickPort from 'pick-port';
@@ -124,7 +121,6 @@ export class MatterOnOffDevice {
     commissioningServer.addDevice(this.device);
     this.commissioningServer = commissioningServer;
 
-    logEndpoint(commissioningServer.getRootEndpoint());
     return commissioningServer;
   }
 

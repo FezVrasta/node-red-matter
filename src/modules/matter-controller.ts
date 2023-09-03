@@ -37,8 +37,6 @@ export class MatterController {
       subscribeAllAttributes: true,
     });
 
-    logEndpoint(commissioningController.getRootEndpoint());
-
     this.commissioningController = commissioningController;
   }
 
