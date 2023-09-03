@@ -2,7 +2,7 @@ import type { NodeAPI, Node, NodeDef } from 'node-red';
 import { MatterController } from '../modules/matter-controller';
 import { MatterServerNode } from './matter-server-node';
 import { StatusChangeMessage } from './matter-device-node';
-import { DeviceType } from '../modules/matter-accessory';
+import { DeviceType } from '../modules/matter-device';
 
 export interface MatterControllerNodeConfig extends NodeDef {
   server: string;

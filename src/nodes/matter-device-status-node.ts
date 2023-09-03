@@ -1,6 +1,6 @@
 import type { NodeAPI, Node, NodeDef } from 'node-red';
 import { MatterDeviceNode, StatusChangeMessage } from './matter-device-node';
-import { DeviceType } from '../modules/matter-accessory';
+import { DeviceType } from '../modules/matter-device';
 
 interface MatterDeviceNodeConfig extends NodeDef {
   device: string;

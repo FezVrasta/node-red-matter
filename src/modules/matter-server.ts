@@ -78,8 +78,8 @@ export class MatterServer {
 
   async start() {
     await this.matterServer.start();
-    await this.connectAllCommissioningControllers();
     this.logAllEndpoints();
+    await this.connectAllCommissioningControllers();
   }
 
   async stop() {

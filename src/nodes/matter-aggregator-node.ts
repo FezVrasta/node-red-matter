@@ -1,5 +1,6 @@
 import type { NodeAPI, Node, NodeDef } from 'node-red';
-import { DeviceType, MatterAccessory } from '../modules/matter-accessory';
+import { DeviceType } from '../modules/matter-device';
+import { MatterAccessory } from '../modules/matter-accessory';
 import { MatterServerNode } from './matter-server-node';
 import { MatterAggregator } from '../modules/matter-aggregator';
 import { ObservableMap } from '../utils/ObservableMap';
@@ -144,33 +145,37 @@ export default function (RED: NodeAPI) {
       }
     });
 
-    function startAggregator() {
+    async function startAggregator() {
       clearTimeout(timeout);
+
+      matterDevices.forEach((device) => {
+        matterDevice.addBridgedDevice(device);
+      });
+
       node.log('Starting matter aggregator');
-      matterDevice
-        .start({ devices: matterDevices })
-        .then(async (commissioningServer) => {
-          // Register device to Matter server
-          node.log(`Registering device to Matter server ${config.server}`);
+      try {
+        const commissioningServer = await matterDevice.start();
 
-          if (server == null) {
-            node.warn(`Matter server ${config.server} not found`);
-            return;
-          }
-          server.emit('add_commissioning_server', node.id, commissioningServer);
+        // Register device to Matter server
+        node.log(`Registering device to Matter server ${config.server}`);
 
-          await server.serverPromise;
+        if (server == null) {
+          node.warn(`Matter server ${config.server} not found`);
+          return;
+        }
+        server.emit('add_commissioning_server', node.id, commissioningServer);
 
-          const message = await matterDevice.getPairingData();
+        await server.serverPromise;
 
-          // Store pairing code
-          node.qrcode = message.qrCode;
-          node.manualPairingCode = message.manualPairingCode;
-          node.commissioned = message.commissioned;
-        })
-        .catch((e) => {
-          node.error(e);
-        });
+        const message = await matterDevice.getPairingData();
+
+        // Store pairing code
+        node.qrcode = message.qrCode;
+        node.manualPairingCode = message.manualPairingCode;
+        node.commissioned = message.commissioned;
+      } catch (err) {
+        node.error(err);
+      }
     }
   }
 

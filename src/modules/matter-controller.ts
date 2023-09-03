@@ -6,7 +6,6 @@ import {
 import { EndpointNumber } from '@project-chip/matter-node.js/datatype';
 import { CommissioningOptions } from '@project-chip/matter-node.js/protocol';
 import { ManualPairingCodeCodec } from '@project-chip/matter-node.js/schema';
-import { logEndpoint } from '@project-chip/matter-node.js/util';
 
 export class MatterController {
   commissioningController: CommissioningController;
