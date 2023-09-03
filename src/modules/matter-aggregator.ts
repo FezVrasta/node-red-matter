@@ -4,7 +4,7 @@ import { logEndpoint } from '@project-chip/matter-node.js/util';
 import { VendorId } from '@project-chip/matter.js/datatype';
 // @ts-ignore
 import pickPort from 'pick-port';
-import { MatterOnOffDevice } from './matter-device';
+import { MatterAccessory } from './matter-accessory';
 
 interface CommissionMessage {
   qrCode: string;
@@ -48,7 +48,7 @@ export class MatterAggregator {
   async start({
     devices,
   }: {
-    devices: MatterOnOffDevice[];
+    devices: MatterAccessory[];
   }): Promise<CommissioningServer> {
     const port: number =
       this.port === 0

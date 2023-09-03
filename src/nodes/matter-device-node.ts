@@ -1,5 +1,5 @@
 import type { NodeAPI, Node, NodeDef } from 'node-red';
-import { DeviceType, MatterOnOffDevice } from '../modules/matter-device';
+import { DeviceType, MatterAccessory } from '../modules/matter-accessory';
 import { MatterServerNode } from './matter-server-node';
 import { EndpointNumber } from '@project-chip/matter-node.js/datatype';
 import { MatterAggregatorNode } from './matter-aggregator-node';
@@ -23,7 +23,7 @@ export interface MatterDeviceNode extends Node {
   qrcode: string;
   manualPairingCode: string;
   commissioned: boolean;
-  device: MatterOnOffDevice;
+  device: MatterAccessory;
 }
 
 export type StatusChangeMessage = {
@@ -79,7 +79,7 @@ export default function (RED: NodeAPI) {
       return;
     }
 
-    const matterDevice = new MatterOnOffDevice(
+    const matterDevice = new MatterAccessory(
       config.devicetype,
       Number(config.port),
       node.id,

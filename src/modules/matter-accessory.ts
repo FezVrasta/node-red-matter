@@ -20,7 +20,7 @@ interface CommissionMessage {
   commissioned: boolean;
 }
 
-export class MatterOnOffDevice {
+export class MatterAccessory {
   commissioningServer: CommissioningServer | undefined;
   uniqueId: string;
   device: OnOffPluginUnitDevice | OnOffLightDevice | undefined;

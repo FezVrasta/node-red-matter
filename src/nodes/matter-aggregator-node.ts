@@ -1,5 +1,5 @@
 import type { NodeAPI, Node, NodeDef } from 'node-red';
-import { DeviceType, MatterOnOffDevice } from '../modules/matter-device';
+import { DeviceType, MatterAccessory } from '../modules/matter-accessory';
 import { MatterServerNode } from './matter-server-node';
 import { MatterAggregator } from '../modules/matter-aggregator';
 import { ObservableMap } from '../utils/ObservableMap';
@@ -106,10 +106,10 @@ export default function (RED: NodeAPI) {
       }
     });
 
-    const matterDevices: MatterOnOffDevice[] = [];
+    const matterDevices: MatterAccessory[] = [];
     node.addListener(
       'add_bridged_device',
-      async (id: string, device: MatterOnOffDevice) => {
+      async (id: string, device: MatterAccessory) => {
         node.log(`Adding device ${id} to aggregator`);
         matterDevices.push(device);
         relatedNodes.set(id, true);
