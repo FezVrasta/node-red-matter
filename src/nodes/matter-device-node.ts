@@ -137,6 +137,8 @@ export default function (RED: NodeAPI) {
           switch (config.devicetype) {
             case DeviceType.OnOffLightDevice:
             case DeviceType.OnOffPluginUnitDevice:
+            case DeviceType.DimmableLightDevice:
+            case DeviceType.DimmablePluginUnitDevice:
               matterDevice.device.isOn().then((status) => {
                 const updateStatusMessage: StatusChangeMessage = {
                   type: config.devicetype,
@@ -161,6 +163,8 @@ export default function (RED: NodeAPI) {
       switch (config.devicetype) {
         case DeviceType.OnOffLightDevice:
         case DeviceType.OnOffPluginUnitDevice:
+        case DeviceType.DimmableLightDevice:
+        case DeviceType.DimmablePluginUnitDevice:
           if (typeof status !== 'boolean') {
             node.warn(
               `Invalid status ${status} for device type ${config.devicetype}`

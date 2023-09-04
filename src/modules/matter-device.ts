@@ -10,21 +10,27 @@ import {
 import { VendorId } from '@project-chip/matter-node.js/datatype';
 
 export enum DeviceTypeIds {
+  Aggregator = DeviceTypes.AGGREGATOR.code,
   OnOffPluginUnitDevice = DeviceTypes.ON_OFF_PLUGIN_UNIT.code,
   OnOffLightDevice = DeviceTypes.ON_OFF_LIGHT.code,
-  Aggregator = DeviceTypes.AGGREGATOR.code,
+  DimmablePluginUnitDevice = DeviceTypes.DIMMABLE_PLUGIN_UNIT.code,
+  DimmableLightDevice = DeviceTypes.DIMMABLE_LIGHT.code,
 }
 
 export enum DeviceType {
+  Aggregator = 'Aggregator',
   OnOffPluginUnitDevice = 'OnOffPluginUnitDevice',
   OnOffLightDevice = 'OnOffLightDevice',
-  Aggregator = 'Aggregator',
+  DimmablePluginUnitDevice = 'DimmablePluginUnitDevice',
+  DimmableLightDevice = 'DimmableLightDevice',
 }
 
 const deviceTypeNames = {
+  [DeviceType.Aggregator]: 'Aggregator',
   [DeviceType.OnOffPluginUnitDevice]: 'OnOffPluginUnitDevice',
   [DeviceType.OnOffLightDevice]: 'OnOffLightDevice',
-  [DeviceType.Aggregator]: 'Aggregator',
+  [DeviceType.DimmablePluginUnitDevice]: 'DimmablePluginUnitDevice',
+  [DeviceType.DimmableLightDevice]: 'DimmableLightDevice',
 };
 
 interface CommissionMessage {
@@ -91,6 +97,13 @@ export class MatterDevice {
      * If the device is not already commissioned (this info is stored in the storage system) then get and print the
      * pairing details. This includes the QR code that can be scanned by the Matter app to pair the device.
      */
+
+    console.log(
+      this.deviceType,
+      // @ts-ignore
+      this.commissioningServer.options.deviceName,
+      this.commissioningServer.isCommissioned()
+    );
 
     const commissioned = this.commissioningServer.isCommissioned();
     const pairingData = this.commissioningServer.getPairingCode({
