@@ -21,7 +21,9 @@ export class MatterAggregator extends MatterDevice {
       deviceName,
     });
 
-    this.device = new Aggregator();
+    this.device = new Aggregator(undefined, {
+      uniqueStorageKey: uniqueId,
+    });
   }
 
   addBridgedDevice(device: MatterAccessory) {

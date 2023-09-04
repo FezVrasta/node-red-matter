@@ -40,18 +40,26 @@ export class MatterAccessory extends MatterDevice {
       deviceName,
     });
 
+    const options = {
+      uniqueStorageKey: uniqueId,
+    };
+
     switch (deviceType) {
       case DeviceType.OnOffPluginUnitDevice:
-        this.device = new OnOffPluginUnitDevice();
+        this.device = new OnOffPluginUnitDevice(undefined, options);
         break;
       case DeviceType.OnOffLightDevice:
-        this.device = new OnOffLightDevice();
+        this.device = new OnOffLightDevice(undefined, options);
         break;
       case DeviceType.DimmablePluginUnitDevice:
-        this.device = new DimmablePluginUnitDevice();
+        this.device = new DimmablePluginUnitDevice(
+          undefined,
+          undefined,
+          options
+        );
         break;
       case DeviceType.DimmableLightDevice:
-        this.device = new DimmableLightDevice();
+        this.device = new DimmableLightDevice(undefined, undefined, options);
         break;
       default:
         throw new Error('Unknown device type');
@@ -63,6 +71,7 @@ export class MatterAccessory extends MatterDevice {
     });
 
     this.device.isOn().then((on) => {
+      console.log('IS ON', on);
       onStatusChange(on);
     });
   }
