@@ -51,6 +51,7 @@ export class MatterServer {
 
   private commissioningServers: CommissioningServer[] = [];
   addCommissioningServer(commissioningServer: CommissioningServer) {
+    this.commissioningServers.push(commissioningServer);
     this.matterServer.addCommissioningServer(commissioningServer);
   }
 
