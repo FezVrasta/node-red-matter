@@ -99,64 +99,54 @@ export default function (RED: NodeAPI) {
     });
     node.device = matterDevice;
 
-    // If the accessory is standalone, start the commissioning server
-    if (config.devicecategory === DeviceCategory.standalone && server != null) {
-      matterDevice
-        .start()
-        .then(async (commissioningServer) => {
-          if (
-            config.devicecategory === DeviceCategory.standalone &&
-            server != null
-          ) {
-            server.emit(
-              'add_commissioning_server',
-              node.id,
-              commissioningServer
-            );
-            await server.serverPromise;
+    async function start() {
+      // If the accessory is standalone, start the commissioning server
+      if (
+        config.devicecategory === DeviceCategory.standalone &&
+        server != null
+      ) {
+        const commissioningServer = await matterDevice.start();
 
-            const message = await matterDevice.getPairingData();
+        server.emit('add_commissioning_server', node.id, commissioningServer);
+        await server.serverPromise;
 
-            // Store pairing code
-            node.qrcode = message.qrCode;
-            node.manualPairingCode = message.manualPairingCode;
-            node.commissioned = message.commissioned;
-          } else if (aggregator != null) {
-            aggregator.emit('add_bridged_device', node.id, matterDevice);
-            await aggregator.server.serverPromise;
-          } else {
-            node.error('No server or aggregator found');
-            return;
-          }
+        // Pairing data is available only if running as standalone device
+        const message = await matterDevice.getPairingData();
+        // Store pairing code
+        node.qrcode = message.qrCode;
+        node.manualPairingCode = message.manualPairingCode;
+        node.commissioned = message.commissioned;
+      } else if (
+        config.devicecategory === DeviceCategory.aggregated &&
+        aggregator != null
+      ) {
+        aggregator.emit('add_bridged_device', node.id, matterDevice);
+        await aggregator.server.serverPromise;
+      } else {
+        node.error('No server or aggregator found');
+        return;
+      }
 
-          // Handle device updates
-          if (matterDevice.device == null) {
-            return;
-          }
-
-          switch (config.devicetype) {
-            case DeviceType.OnOffLightDevice:
-            case DeviceType.OnOffPluginUnitDevice:
-            case DeviceType.DimmableLightDevice:
-            case DeviceType.DimmablePluginUnitDevice:
-              matterDevice.device.isOn().then((status) => {
-                const updateStatusMessage: StatusChangeMessage = {
-                  type: config.devicetype,
-                  name: matterDevice.deviceName,
-                  id: matterDevice.device?.id,
-                  status,
-                };
-                node.emit('status_change', updateStatusMessage);
-              });
-              break;
-            default:
-              node.warn(`Unknown device type ${config.devicetype}`);
-          }
-        })
-        .catch((error) => {
-          node.error(error);
-        });
+      switch (config.devicetype) {
+        case DeviceType.OnOffLightDevice:
+        case DeviceType.OnOffPluginUnitDevice:
+        case DeviceType.DimmableLightDevice:
+        case DeviceType.DimmablePluginUnitDevice:
+          matterDevice.device.isOn().then((status) => {
+            const updateStatusMessage: StatusChangeMessage = {
+              type: config.devicetype,
+              name: matterDevice.deviceName,
+              id: matterDevice.device?.id,
+              status,
+            };
+            node.emit('status_change', updateStatusMessage);
+          });
+          break;
+        default:
+          node.warn(`Unknown device type ${config.devicetype}`);
+      }
     }
+    start();
 
     // Receive status change requests from matter-device-control nodes
     node.addListener('change_status', (status) => {
