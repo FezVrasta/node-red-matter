@@ -42,8 +42,7 @@ Find the documentation our our [wiki](https://github.com/FezVrasta/node-red-matt
 
 Currently, the Node-RED Matter plugin has the following limitations:
 
-- The plugin only supports the OnOffLightDevice (light) and OnOffPluginUnitDevice (outlet) device types,
-  more device types will be added in the future.
+- The plugin only supports 4 device types: Dimmable and not dimmable lights, and dimmable and not dimmable switches. More device types will be added in the future.
 
 ## 💾 Backup
 

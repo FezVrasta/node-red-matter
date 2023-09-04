@@ -1,9 +1,15 @@
 import type { NodeAPI, Node, NodeDef } from 'node-red';
 import { DeviceType } from '../modules/matter-device';
-import { MatterAccessory } from '../modules/matter-accessory';
+import { MatterAccessory, levelUnit } from '../modules/matter-accessory';
 import { MatterServerNode } from './matter-server-node';
 import { EndpointNumber } from '@project-chip/matter-node.js/datatype';
 import { MatterAggregatorNode } from './matter-aggregator-node';
+import {
+  DimmableLightDevice,
+  DimmablePluginUnitDevice,
+  OnOffLightDevice,
+  OnOffPluginUnitDevice,
+} from '@project-chip/matter-node.js/device';
 
 export enum DeviceCategory {
   standalone = 'standalone',
@@ -14,7 +20,11 @@ export interface MatterDeviceNodeConfig extends NodeDef {
   server: string;
   aggregator: string;
   devicecategory: DeviceCategory;
-  devicetype: DeviceType;
+  devicetype:
+    | DeviceType.OnOffLightDevice
+    | DeviceType.OnOffPluginUnitDevice
+    | DeviceType.DimmableLightDevice
+    | DeviceType.DimmablePluginUnitDevice;
   port: number;
   discriminator: number;
   productid: string;
@@ -27,12 +37,26 @@ export interface MatterDeviceNode extends Node {
   device: MatterAccessory;
 }
 
-export type StatusChangeMessage = {
-  type: DeviceType;
-  name: string;
-  id: EndpointNumber | undefined;
-  status: boolean | undefined;
-};
+export type StatusChangeMessage =
+  | {
+      type: DeviceType.OnOffLightDevice | DeviceType.OnOffPluginUnitDevice;
+      name: string;
+      id: EndpointNumber | undefined;
+      status: {
+        on?: boolean | null;
+      };
+    }
+  | {
+      type:
+        | DeviceType.DimmableLightDevice
+        | DeviceType.DimmablePluginUnitDevice;
+      name: string;
+      id: EndpointNumber | undefined;
+      status: {
+        on?: boolean | null;
+        level?: number | null;
+      };
+    };
 
 export default function (RED: NodeAPI) {
   RED.httpAdmin
@@ -88,13 +112,7 @@ export default function (RED: NodeAPI) {
       productId: Number(config.productid ?? 0x8000),
       deviceName: node.name ?? node.id,
       onStatusChange: (status) => {
-        const message: StatusChangeMessage = {
-          type: config.devicetype,
-          name: matterDevice.deviceName,
-          id: matterDevice.device?.id,
-          status,
-        };
-        node.emit('status_change', message);
+        node.emit('status_change', status);
       },
     });
     node.device = matterDevice;
@@ -126,46 +144,55 @@ export default function (RED: NodeAPI) {
         node.error('No server or aggregator found');
         return;
       }
-
-      switch (config.devicetype) {
-        case DeviceType.OnOffLightDevice:
-        case DeviceType.OnOffPluginUnitDevice:
-        case DeviceType.DimmableLightDevice:
-        case DeviceType.DimmablePluginUnitDevice:
-          matterDevice.device.isOn().then((status) => {
-            const updateStatusMessage: StatusChangeMessage = {
-              type: config.devicetype,
-              name: matterDevice.deviceName,
-              id: matterDevice.device?.id,
-              status,
-            };
-            node.emit('status_change', updateStatusMessage);
-          });
-          break;
-        default:
-          node.warn(`Unknown device type ${config.devicetype}`);
-      }
     }
     start();
 
     // Receive status change requests from matter-device-control nodes
     node.addListener('change_status', (status) => {
-      switch (config.devicetype) {
-        case DeviceType.OnOffLightDevice:
-        case DeviceType.OnOffPluginUnitDevice:
-        case DeviceType.DimmableLightDevice:
-        case DeviceType.DimmablePluginUnitDevice:
-          if (typeof status !== 'boolean') {
-            node.warn(
-              `Invalid status ${status} for device type ${config.devicetype}`
-            );
-            return;
-          }
-          matterDevice.device.onOff(status);
-          break;
-        default:
-          node.warn(`Unknown device type ${config.devicetype}`);
-      }
+      Object.entries(status).forEach(([key, value]) => {
+        switch (key) {
+          case 'on':
+            if (
+              matterDevice.device instanceof DimmableLightDevice ||
+              matterDevice.device instanceof DimmablePluginUnitDevice ||
+              matterDevice.device instanceof OnOffLightDevice ||
+              matterDevice.device instanceof OnOffPluginUnitDevice
+            ) {
+              if (typeof value !== 'boolean') {
+                node.warn(
+                  `Invalid status ${status} for device type ${config.devicetype}`
+                );
+                return;
+              }
+              matterDevice.device.onOff(value);
+            } else {
+              node.warn(
+                `Invalid status ${status} for device type ${config.devicetype}`
+              );
+            }
+            break;
+          case 'level':
+            if (
+              matterDevice.device instanceof DimmableLightDevice ||
+              matterDevice.device instanceof DimmablePluginUnitDevice
+            ) {
+              if (typeof value !== 'number') {
+                node.warn(
+                  `Invalid status ${status} for device type ${config.devicetype}`
+                );
+                return;
+              }
+              matterDevice.device.setCurrentLevel(value / levelUnit);
+            } else {
+              node.warn(
+                `Invalid status ${status} for device type ${config.devicetype}`
+              );
+            }
+            break;
+          default:
+            node.warn(`Unknown device type ${config.devicetype}`);
+        }
+      });
     });
   }
 

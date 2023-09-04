@@ -41,12 +41,12 @@ interface CommissionMessage {
   commissioned: boolean;
 }
 
-export class MatterDevice {
+export class MatterDevice<SubDeviceType extends DeviceType> {
   device: OnOffPluginUnitDevice | OnOffLightDevice | Aggregator | undefined;
   commissioningServer: CommissioningServer | undefined;
   uniqueId: string;
   port: number;
-  deviceType: DeviceType;
+  deviceType: SubDeviceType;
   deviceName = 'Matter test device';
   vendorName = 'Node RED Matter';
   passcode = 20202021;
@@ -64,7 +64,7 @@ export class MatterDevice {
     productId,
     deviceName,
   }: {
-    deviceType: DeviceType;
+    deviceType: SubDeviceType;
     port: number;
     uniqueId: string;
     discriminator: number;

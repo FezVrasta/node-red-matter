@@ -2,7 +2,7 @@ import { Aggregator } from '@project-chip/matter-node.js/device';
 import { MatterAccessory } from './matter-accessory';
 import { DeviceType, MatterDevice } from './matter-device';
 
-export class MatterAggregator extends MatterDevice {
+export class MatterAggregator extends MatterDevice<DeviceType.Aggregator> {
   override device: Aggregator;
 
   constructor(

@@ -48,7 +48,7 @@ export default function (RED: NodeAPI) {
           type: DeviceType.OnOffLightDevice,
           name,
           id,
-          status,
+          status: { on: status },
         };
         node.emit('status_change', updateStatusMessage);
       });

@@ -40,23 +40,44 @@ export function MatterDeviceStatusNode(RED: NodeAPI) {
           payload: status,
         });
 
-        if (
-          status.type === DeviceType.OnOffLightDevice ||
-          status.type === DeviceType.OnOffPluginUnitDevice
-        ) {
-          node.status({
-            fill: status.status
-              ? 'green'
-              : status.status === false
-              ? 'red'
-              : 'grey',
-            shape: 'dot',
-            text: status.status
-              ? 'on'
-              : status.status === false
-              ? 'off'
-              : 'unknown',
-          });
+        switch (status.type) {
+          case DeviceType.OnOffLightDevice:
+          case DeviceType.OnOffPluginUnitDevice: {
+            node.status({
+              fill: status.status.on
+                ? 'green'
+                : status.status.on === false
+                ? 'red'
+                : 'grey',
+              shape: 'dot',
+              text: status.status.on
+                ? 'on'
+                : status.status.on === false
+                ? 'off'
+                : 'unknown',
+            });
+            break;
+          }
+          case DeviceType.DimmableLightDevice:
+          case DeviceType.DimmablePluginUnitDevice: {
+            const level = status.status.level;
+            const levelText =
+              level != null ? ` (${Math.round(level)}%)` : '(unknown %)';
+            node.status({
+              fill: status.status.on
+                ? 'green'
+                : status.status.on === false
+                ? 'red'
+                : 'grey',
+              shape: 'dot',
+              text: status.status.on
+                ? `on ${levelText}`
+                : status.status.on === false
+                ? `off ${levelText}`
+                : 'unknown',
+            });
+            break;
+          }
         }
       }
     );
