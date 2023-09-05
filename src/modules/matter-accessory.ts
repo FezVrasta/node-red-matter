@@ -4,7 +4,6 @@ import {
   OnOffLightDevice,
   OnOffPluginUnitDevice,
 } from '@project-chip/matter-node.js/device';
-import { commandExecutor } from '@project-chip/matter-node.js/util';
 import { DeviceType, MatterDevice } from './matter-device';
 import { StatusChangeMessage } from '../nodes/matter-device-node';
 
@@ -82,7 +81,6 @@ export class MatterAccessory extends MatterDevice<
       this.device instanceof DimmablePluginUnitDevice
     ) {
       this.device.addCurrentLevelListener(async (level) => {
-        commandExecutor('brightness')?.();
         const on = await this.device.isOn();
 
         onStatusChange({
@@ -97,8 +95,6 @@ export class MatterAccessory extends MatterDevice<
     }
 
     this.device.addOnOffListener((on) => {
-      commandExecutor(on ? 'on' : 'off')?.();
-
       if (
         this.device instanceof DimmableLightDevice ||
         this.device instanceof DimmablePluginUnitDevice
