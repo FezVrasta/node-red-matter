@@ -190,7 +190,11 @@ export default function (RED: NodeAPI) {
             }
             break;
           default:
-            node.warn(`Unknown device type ${config.devicetype}`);
+            node.warn(
+              `Unknown status ${key} (value ${JSON.stringify(
+                value
+              )}) for device type ${config.devicetype}`
+            );
         }
       });
     });

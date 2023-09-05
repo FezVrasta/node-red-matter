@@ -73,7 +73,7 @@ export class MatterAccessory extends MatterDevice<
         this.device = new DimmableLightDevice(undefined, undefined, options);
         break;
       default:
-        throw new Error('Unknown device type');
+        throw new Error(`Unknown device type ${deviceType}`);
     }
 
     if (
