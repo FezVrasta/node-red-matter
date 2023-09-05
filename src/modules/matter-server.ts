@@ -3,7 +3,6 @@ import {
   CommissioningServer,
   MatterServer as MatterNodeServer,
 } from '@project-chip/matter-node.js';
-import { Level, Logger } from '@project-chip/matter-node.js/log';
 import {
   StorageBackendDisk,
   StorageManager,
@@ -12,27 +11,6 @@ import {
 import pickPort from 'pick-port';
 import fs from 'node:fs';
 import { logEndpoint } from '@project-chip/matter-node.js/util';
-
-const LOG_LEVEL = Number(process.env.NODE_RED_MATTER_LOG_LEVEL);
-switch (LOG_LEVEL) {
-  case 0:
-    Logger.defaultLogLevel = Level.DEBUG;
-    break;
-  case 1:
-    Logger.defaultLogLevel = Level.INFO;
-    break;
-  case 2:
-    Logger.defaultLogLevel = Level.WARN;
-    break;
-  case 3:
-    Logger.defaultLogLevel = Level.ERROR;
-    break;
-  case 4:
-    Logger.defaultLogLevel = Level.FATAL;
-    break;
-  default:
-    Logger.defaultLogLevel = Level.ERROR;
-}
 
 export class MatterServer {
   matterServer: MatterNodeServer;
