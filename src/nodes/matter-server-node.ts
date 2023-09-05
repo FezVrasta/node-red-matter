@@ -8,6 +8,7 @@ import {
 import { Deferred } from 'ts-deferred';
 import { ObservableMap } from '../utils/ObservableMap';
 import { DeviceCategory } from './matter-device-node';
+import { Level, Logger } from '@project-chip/matter-node.js/log';
 
 interface MatterServerNodeConfig extends NodeDef {}
 
@@ -16,6 +17,26 @@ export interface MatterServerNode extends Node {
 }
 
 export default function (RED: NodeAPI) {
+  switch (RED.settings.logging?.console?.level) {
+    case 'trace':
+    case 'debug':
+      Logger.defaultLogLevel = Level.DEBUG;
+      break;
+    case 'info':
+      Logger.defaultLogLevel = Level.INFO;
+      break;
+    case 'warn':
+      Logger.defaultLogLevel = Level.WARN;
+      break;
+    case 'error':
+      Logger.defaultLogLevel = Level.ERROR;
+      break;
+    case 'fatal':
+    case 'off':
+    default:
+      Logger.defaultLogLevel = Level.FATAL;
+  }
+
   function MatterServerNode(
     this: MatterServerNode,
     config: MatterServerNodeConfig

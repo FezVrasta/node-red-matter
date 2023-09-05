@@ -128,7 +128,6 @@ export class MatterAccessory extends MatterDevice<
     });
 
     this.device.isOn().then((on) => {
-      console.log('IS ON', on);
       onStatusChange({
         type: this.deviceType,
         name: this.deviceName,

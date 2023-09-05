@@ -98,13 +98,6 @@ export class MatterDevice<SubDeviceType extends DeviceType> {
      * pairing details. This includes the QR code that can be scanned by the Matter app to pair the device.
      */
 
-    console.log(
-      this.deviceType,
-      // @ts-ignore
-      this.commissioningServer.options.deviceName,
-      this.commissioningServer.isCommissioned()
-    );
-
     const commissioned = this.commissioningServer.isCommissioned();
     const pairingData = this.commissioningServer.getPairingCode({
       ble: false,
