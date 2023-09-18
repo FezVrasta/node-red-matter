@@ -46,11 +46,11 @@ Currently, the Node-RED Matter plugin has the following limitations:
 
 ## 💾 Backup
 
-The generated Matter device configurations are currently stored in `~/.node-red/node-red-matter/matter-devices`, or under wherever your Node-RED
+The generated Matter server configurations are currently stored in `~/.node-red/node-red-matter/matter-server`, or under wherever your Node-RED
 user directory is located.
 
-Each device is stored in a sub-folder named after the configuration node ID, if you ever need to recreate a Matter configuration node but don't want to
-lose your existing virtual Matter device, you can simply rename the folder with the new configuration node ID and it will automatically pick it up.
+Each service is stored in a sub-folder named after the configuration node ID, if you ever need to recreate a Matter configuration node but don't want to
+lose your existing virtual Matter devices and server, you can simply rename the folder with the new configuration node ID and it will automatically pick it up.
 
 ## 🤲 Contributing
 
