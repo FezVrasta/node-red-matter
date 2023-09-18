@@ -46,7 +46,7 @@ Currently, the Node-RED Matter plugin has the following limitations:
 
 ## 💾 Backup
 
-The generated Matter server configurations are currently stored in `~/.node-red/node-red-matter/matter-server`, or under wherever your Node-RED
+The generated Matter server configurations are currently stored in `~/.node-red/node-red-matter/matter-servers`, or under wherever your Node-RED
 user directory is located.
 
 Each service is stored in a sub-folder named after the configuration node ID, if you ever need to recreate a Matter configuration node but don't want to
